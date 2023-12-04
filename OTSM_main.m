@@ -72,8 +72,8 @@ for iesn0 = 1:length(SNR_dB)
         %% random input bits generation%%%%%
         trans_info_bit = randi([0,1],N_syms_perfram*M_bits,1);
         %%2D QAM symbols generation %%%%%%%%
-%         data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');        
-        data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod, 0,'gray');        
+        data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');        
+        %data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod, 0,'gray');        
         X = Generate_2D_data_grid(N,M,data,data_grid);
         
         
