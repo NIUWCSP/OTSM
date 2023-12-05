@@ -1,5 +1,5 @@
 close all%111
-clear all
+clear all%
 rng(1)
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
