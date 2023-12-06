@@ -1,4 +1,4 @@
-close all%111
+close all%1
 clear all
 rng(1)
 %% OTFS parameters%%%%%%%%%%
