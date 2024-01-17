@@ -7,7 +7,7 @@ Qn_block_matrix=zeros(M,M,N);
 zn_block_vector=zeros(M,N);
 
 H_t_f=zeros(N,M); % Time-frequency single tap channel matrix
-Fn=dftmtx(M);
+Fn=dftmtx(M);%离散傅里叶变换矩阵
 Fn=Fn./norm(Fn);
 for n=1:N
     rn=r((n-1)*M+1:n*M);
