@@ -13,7 +13,7 @@ sn_block_est=zeros(M,N);
 for i=1:N    
     rn=r((i-1)*M+1:i*M);
     Gn=Gn_block_matrix(:,:,i);
-    Rn=Gn'*Gn;
+    Rn=Gn'*Gn;%共變異數矩陣
     sn_block_est(:,i)=(Rn+noise_var.*eye(M))^(-1)*(Gn'*rn);
 end
 X_tilda_est=sn_block_est;

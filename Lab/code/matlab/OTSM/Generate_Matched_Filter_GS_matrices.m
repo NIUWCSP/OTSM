@@ -7,14 +7,14 @@ Qn_block_matrix=zeros(M,M,N);
 zn_block_vector=zeros(M,N);
 
 H_t_f=zeros(N,M); % Time-frequency single tap channel matrix
-Fn=dftmtx(M);
+Fn=dftmtx(M);%离散傅里叶变换矩阵
 Fn=Fn./norm(Fn);
 for n=1:N
     rn=r((n-1)*M+1:n*M);
     Gn_block_matrix(:,:,n)=G((n-1)*M+1:n*M,(n-1)*M+1:n*M);
     Gn=Gn_block_matrix(:,:,n);
     H_t_f(n,1:M)=diag(Fn*Gn*Fn').';  % Generate time-frequency channel matrix for low complexity initial estimate using equation (20) in [R2]
-    Rn=Gn'*Gn;    
+    Rn=Gn'*Gn;    %2.22
     Dn=diag(diag(Rn));
     Ln=tril(Rn,-1);
     Un=triu(Rn,1);
