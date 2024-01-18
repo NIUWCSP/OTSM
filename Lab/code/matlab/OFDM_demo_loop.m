@@ -112,8 +112,8 @@ avg_ber_1tap=zeros(1,1);
 avg_ber_LMMSE=zeros(1,1);
 
 det_iters_MFGS=0;
-no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
-avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
+no_of_detetor_iterations_MFGS= zeros(1,1);
+avg_no_of_iterations_MFGS=zeros(1,1);
 
 %% PLOT TX for Evan_debug 畫出TX的時域圖與頻譜圖
 TimeScopeTitleStr = 'OFDM-TX-Baseband I/Q Signal';
