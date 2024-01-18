@@ -34,6 +34,8 @@ upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真
 txdata = Transmitter(upsample);
 txdata = round(txdata .* 2^15); %[(32768*4096)/1024]  -2/2
 
+
+
 %% Transmit and Receive using MATLAB libiio 串接pluto
 
 % System Object Configuration
@@ -60,6 +62,58 @@ input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
 input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
 input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
 
+%% OTFS parameters%%%%%%%%%%
+% N: number of symbols in time
+N = 64;
+% M: number of subcarriers in frequency
+M = 64;
+% M_mod: size of QAM constellation
+M_mod = 4;
+M_bits = log2(M_mod);
+% average energy per data symbol
+eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
+
+%% delay-Doppler grid symbol placement
+% max delay spread in the channel
+delay_spread = M/16;
+% data positions of OTFS delay-Doppler domain data symbols  in the 2-D grid
+M_data = M-delay_spread;
+data_grid=zeros(M,N);
+data_grid(1:M_data,1:N)=1;
+% number of symbols per frame
+N_syms_perfram = sum(sum(data_grid));
+% number of bits per frame
+N_bits_perfram = N_syms_perfram*M_bits;
+
+
+
+% Time and frequency resources
+car_fre = 4*10^9;% Carrier frequency
+delta_f = 15*10^3; % subcarrier spacing: 15 KHz
+T = 1/delta_f; %one time symbol duration in OTFS frame
+
+
+
+%% Initializing simulation error count variables
+
+N_fram = 1000;
+
+est_info_bits_MFGS=zeros(N_bits_perfram,1);
+est_info_bits_1tap=zeros(N_bits_perfram,1);
+est_info_bits_LMMSE=zeros(N_bits_perfram,1);
+
+
+err_ber_MFGS = zeros(1,length(SNR_dB));%bit error rate
+err_ber_1tap = zeros(1,length(SNR_dB));
+err_ber_LMMSE = zeros(1,length(SNR_dB));
+
+avg_ber_MFGS=zeros(1,length(SNR_dB));
+avg_ber_1tap=zeros(1,length(SNR_dB));
+avg_ber_LMMSE=zeros(1,length(SNR_dB));
+
+det_iters_MFGS=0;
+no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
+avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
 
 %% PLOT TX for Evan_debug 畫出TX的時域圖與頻譜圖
 TimeScopeTitleStr = 'OFDM-TX-Baseband I/Q Signal';
