@@ -103,17 +103,17 @@ est_info_bits_1tap=zeros(N_bits_perfram,1);
 est_info_bits_LMMSE=zeros(N_bits_perfram,1);
 
 
-err_ber_MFGS = zeros(1,1);%bit error rate
-err_ber_1tap = zeros(1,1);
-err_ber_LMMSE = zeros(1,1);
+err_ber_MFGS = zeros(1,set_looptimes);%bit error rate
+err_ber_1tap = zeros(1,set_looptimes);
+err_ber_LMMSE = zeros(1,set_looptimes);
 
-avg_ber_MFGS=zeros(1,1);
-avg_ber_1tap=zeros(1,1);
-avg_ber_LMMSE=zeros(1,1);
+avg_ber_MFGS=zeros(1,set_looptimes);
+avg_ber_1tap=zeros(1,set_looptimes);
+avg_ber_LMMSE=zeros(1,set_looptimes);
 
 det_iters_MFGS=0;
-no_of_detetor_iterations_MFGS= zeros(1,1);
-avg_no_of_iterations_MFGS=zeros(1,1);
+no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
+avg_no_of_iterations_MFGS=zeros(1,set_looptimes);
 
 %% PLOT TX for Evan_debug 畫出TX的時域圖與頻譜圖
 TimeScopeTitleStr = 'OFDM-TX-Baseband I/Q Signal';
