@@ -103,13 +103,13 @@ est_info_bits_1tap=zeros(N_bits_perfram,1);
 est_info_bits_LMMSE=zeros(N_bits_perfram,1);
 
 
-err_ber_MFGS = zeros(1,length(SNR_dB));%bit error rate
-err_ber_1tap = zeros(1,length(SNR_dB));
-err_ber_LMMSE = zeros(1,length(SNR_dB));
+err_ber_MFGS = zeros(1,1);%bit error rate
+err_ber_1tap = zeros(1,1);
+err_ber_LMMSE = zeros(1,1);
 
-avg_ber_MFGS=zeros(1,length(SNR_dB));
-avg_ber_1tap=zeros(1,length(SNR_dB));
-avg_ber_LMMSE=zeros(1,length(SNR_dB));
+avg_ber_MFGS=zeros(1,1);
+avg_ber_1tap=zeros(1,1);
+avg_ber_LMMSE=zeros(1,1);
 
 det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
