@@ -115,6 +115,11 @@ det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
 avg_no_of_iterations_MFGS=zeros(1,set_looptimes);
 
+%% Normalized WHT matrix
+Wn=fwht(eye(N));  % Generate the WHT matrix
+Wn=Wn./norm(Wn);  % normalize the WHT matrix
+current_frame_number=zeros(1,set_looptimes);
+
 %% PLOT TX for Evan_debug 畫出TX的時域圖與頻譜圖
 TimeScopeTitleStr = 'OFDM-TX-Baseband I/Q Signal';
 SpectrumTitleStr = 'OFDM-TX-Baseband Signal Spectrum';
