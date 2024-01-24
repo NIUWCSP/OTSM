@@ -53,27 +53,27 @@ err_ber_1tap = zeros(1,length(SNR_dB));
 err_ber_LMMSE = zeros(1,length(SNR_dB));
 
 avg_ber_MFGS=zeros(1,length(SNR_dB));
-avg_ber_1tap=zeros(1,length(SNR_dB));
+avg_ber_1tap=zeros(1,length(SNR_dB));%set_looptimes
 avg_ber_LMMSE=zeros(1,length(SNR_dB));
 
 det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
-avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
+avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB)); 
 
 
 %% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
-
+%% 
 for iesn0 = 1:length(SNR_dB)
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
         %% random input bits generation%%%%%
         trans_info_bit = randi([0,1],N_syms_perfram*M_bits,1);
         %%2D QAM symbols generation %%%%%%%%
-        data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');        
-        %data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod, 0,'gray');        
+        data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*3840        
+        %data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod, 0,'gray','bit');  data=2*3840      
         X = Generate_2D_data_grid(N,M,data,data_grid);
         
         
