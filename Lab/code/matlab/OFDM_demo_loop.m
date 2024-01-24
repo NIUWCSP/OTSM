@@ -144,7 +144,7 @@ AllFoundDataTimes= 0; %嘗試接收data的次數(也是環圈執行次數)
 AllRxDataSymbEq = zeros(0,0); %暫時儲存scattor資料
 AllBERDataCol = zeros(0,0); %暫時儲存BER資料
 
-for loop_times = 1:set_looptimes %確保重複監測
+for loop_times = 1:set_looptimes %確保重複監測 
 %% PLOT RX 畫出RX的圖
 for i=i:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
     fprintf('Transmitting Data Block %i ...\n',i);
