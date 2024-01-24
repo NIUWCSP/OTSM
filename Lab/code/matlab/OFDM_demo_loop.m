@@ -32,7 +32,7 @@ ip = '192.168.2.1';
 %設定與進入TX函式
 upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真
 txdata = Transmitter(upsample);
-txdata = round(txdata .* 2^15); %[(32768*4096)/1024]  -2/2
+
 
 
 
@@ -136,18 +136,6 @@ samp_rate = 40e6;
     step(scope1,txdata);
     release(scope1);
     
-spectrum1 = dsp.SpectrumAnalyzer('SampleRate',      samp_rate, ...
-                                'SpectrumType',    'Power density', ...
-                                'SpectralAverages', 10, ...
-                                'YLimits',         [-70 60], ...
-                                'Title',           SpectrumTitleStr, ...
-                                'YLabel',          'Power spectral density', ...
-                                'Position',        [500 300 400 400]);
-
-% Show power spectral density of captured burst
-step(spectrum1,txdata);
-release(spectrum1);
-
 
 global NoFoundDataTimes;
 NoFoundDataTimes = 0; %未找到data的次數(沒有通過同步)
