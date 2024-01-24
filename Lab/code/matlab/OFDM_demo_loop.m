@@ -1,66 +1,38 @@
-%% **********************¦¹½d¨Ò¶È¾A¥Î©ó³æ¾÷¦Û¦¬¦Ûµo¨Ï¥Î-¥ßÁâ¬ì§Ş********************************
-clearvars -except times;close all;warning off; %¹w³]Àô¹Ò
+%% **********************æ­¤ç¯„ä¾‹åƒ…é©ç”¨æ–¼å–®æ©Ÿè‡ªæ”¶è‡ªç™¼ä½¿ç”¨-ç«‹é‚ç§‘æŠ€********************************
+clearvars -except times;close all;warning off; %é è¨­ç’°å¢ƒ
 set(0,'defaultfigurecolor','w'); 
-%¥[¤Jpath
+%åŠ å…¥path
 addpath ..\..\library 
 addpath ..\..\library\matlab 
 addpath ..\..\code\matlab\OFDM
 
-%§R°£.mat
+%åˆªé™¤.mat
 if(0)
     Delete_mat;
 end
 
-%³]©w±µ¦¬°õ¦æ¦¸¼Æ
+%è¨­å®šæ¥æ”¶åŸ·è¡Œæ¬¡æ•¸
 set_looptimes = 10;
 
-% ¸ü¤J¸ê®Æ
+% è¼‰å…¥è³‡æ–™
 if exist('ScattorData.mat','file')
     load('ScattorData.mat');
 else
-    AllRxDataSymbEqAverage = zeros(0,0); %Àx¦sScattor¸ê®Æ
+    AllRxDataSymbEqAverage = zeros(0,0); %å„²å­˜Scattorè³‡æ–™
 end
 if exist('BERData.mat','file')
     load('BERData.mat');
 else
-    AllBERData = zeros(0,0); %Àx¦sBER¸ê®Æ
+    AllBERData = zeros(0,0); %å„²å­˜BERè³‡æ–™
 end
 
-%³]©wpluto IP
+%è¨­å®špluto IP
 ip = '192.168.2.1';
 
-%³]©w»P¶i¤JTX¨ç¦¡
-upsample=4; %¹L¨ú¼Ë¨ú4­¿¡A¼Æ¦ìÁÙ­ìÃş¤ñ«á¤ñ¸û¥i¥H¤£¥¢¯u
+%è¨­å®šèˆ‡é€²å…¥TXå‡½å¼
+upsample=4; %éå–æ¨£å–4å€ï¼Œæ•¸ä½é‚„åŸé¡æ¯”å¾Œæ¯”è¼ƒå¯ä»¥ä¸å¤±çœŸ
 txdata = Transmitter(upsample);
 
-
-
-
-%% Transmit and Receive using MATLAB libiio ¦ê±µpluto
-
-% System Object Configuration
-s = iio_sys_obj_matlab; % MATLAB libiio Constructor
-s.ip_address = ip;
-s.dev_name = 'ad9361';
-s.in_ch_no = 2;
-s.out_ch_no = 2;
-s.in_ch_size = length(txdata);
-s.out_ch_size = length(txdata).*10;
-
-s = s.setupImpl();
-
-input = cell(1, s.in_ch_no + length(s.iio_dev_cfg.cfg_ch));
-output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
-
-% Set the attributes of AD9361
-input{s.getInChannel('RX_LO_FREQ')} = 2400e6;
-input{s.getInChannel('RX_SAMPLING_FREQ')} = 40e6;
-input{s.getInChannel('RX_RF_BANDWIDTH')} = 20e6;
-input{s.getInChannel('RX1_GAIN_MODE')} = 'manual';%% slow_attack manual
-input{s.getInChannel('RX1_GAIN')} = 1;
-input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
-input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
-input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
 
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
@@ -120,7 +92,34 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,set_looptimes);
 
-%% PLOT TX for Evan_debug µe¥XTXªº®É°ì¹Ï»PÀWÃĞ¹Ï
+%% Transmit and Receive using MATLAB libiio ä¸²æ¥pluto
+
+% System Object Configuration
+s = iio_sys_obj_matlab; % MATLAB libiio Constructor
+s.ip_address = ip;
+s.dev_name = 'ad9361';
+s.in_ch_no = 2;
+s.out_ch_no = 2;
+s.in_ch_size = N*M;
+s.out_ch_size = N*M.*10;
+
+s = s.setupImpl();
+
+input = cell(1, s.in_ch_no + length(s.iio_dev_cfg.cfg_ch));
+output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
+
+% Set the attributes of AD9361
+input{s.getInChannel('RX_LO_FREQ')} = 2400e6;
+input{s.getInChannel('RX_SAMPLING_FREQ')} = 40e6;
+input{s.getInChannel('RX_RF_BANDWIDTH')} = 20e6;
+input{s.getInChannel('RX1_GAIN_MODE')} = 'manual';%% slow_attack manual
+input{s.getInChannel('RX1_GAIN')} = 1;
+input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
+input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
+input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
+
+
+%% PLOT TX for Evan_debug ç•«å‡ºTXçš„æ™‚åŸŸåœ–èˆ‡é »è­œåœ–
 TimeScopeTitleStr = 'OFDM-TX-Baseband I/Q Signal';
 SpectrumTitleStr = 'OFDM-TX-Baseband Signal Spectrum';
     
@@ -135,36 +134,36 @@ samp_rate = 40e6;
                           
     step(scope1,txdata);
     release(scope1);
-    
+
 
 global NoFoundDataTimes;
-NoFoundDataTimes = 0; %¥¼§ä¨ìdataªº¦¸¼Æ(¨S¦³³q¹L¦P¨B)
+NoFoundDataTimes = 0; %æœªæ‰¾åˆ°dataçš„æ¬¡æ•¸(æ²’æœ‰é€šéåŒæ­¥)
 global AllFoundDataTimes;
-AllFoundDataTimes= 0; %¹Á¸Õ±µ¦¬dataªº¦¸¼Æ(¤]¬OÀô°é°õ¦æ¦¸¼Æ)
-AllRxDataSymbEq = zeros(0,0); %¼È®ÉÀx¦sscattor¸ê®Æ
-AllBERDataCol = zeros(0,0); %¼È®ÉÀx¦sBER¸ê®Æ
+AllFoundDataTimes= 0; %å˜—è©¦æ¥æ”¶dataçš„æ¬¡æ•¸(ä¹Ÿæ˜¯ç’°åœˆåŸ·è¡Œæ¬¡æ•¸)
+AllRxDataSymbEq = zeros(0,0); %æš«æ™‚å„²å­˜scattorè³‡æ–™
+AllBERDataCol = zeros(0,0); %æš«æ™‚å„²å­˜BERè³‡æ–™
 
-for loop_times = 1:set_looptimes %½T«O­«½ÆºÊ´ú
-%% PLOT RX µe¥XRXªº¹Ï
-for i=i:4 %¥Ñ©óPLUTO-USB¼Æ¾Ú¶q¨ü­­~¦]¦¹RX¨Ï¥Î¦¹FOR-LOOPµ¥«İTX¼Æ¾Ú¶i¤J by Evan 2019-04-16
+for loop_times = 1:set_looptimes %ç¢ºä¿é‡è¤‡ç›£æ¸¬
+%% PLOT RX ç•«å‡ºRXçš„åœ–
+for i=i:4 %ç”±æ–¼PLUTO-USBæ•¸æ“šé‡å—é™~å› æ­¤RXä½¿ç”¨æ­¤FOR-LOOPç­‰å¾…TXæ•¸æ“šé€²å…¥ by Evan 2019-04-16
     fprintf('Transmitting Data Block %i ...\n',i);
-    input{1} = real(txdata);
-    input{2} = imag(txdata);
-    output = stepImpl(s, input);
+    input{1} = reshape(real(txdata),[],1);
+    input{2} = reshape(imag(txdata),[],1);
+    output = stepImpl(s, input);%èª¿ç”¨plutoçš„é€šé“è³‡æ–™
     fprintf('Data Block %i Received...\n',i);
 end
     I = output{1};
     Q = output{2};
     Rx = I+1i*Q;
     figure(1); clf;
-    set(gcf,'name','¥ßÁâ¬ì§Ş-RX¹ê»ÚI/Q±µ¦¬ª¬ºA'); % EVAN for debug OK
+    set(gcf,'name','ç«‹é‚ç§‘æŠ€-RXå¯¦éš›I/Qæ¥æ”¶ç‹€æ…‹'); % EVAN for debug OK
     subplot(121);
     plot(I);
     hold on;
     plot(Q);
     subplot(122);
     pwelch(Rx, [],[],[], 40e6, 'centered', 'psd');
-    % 20230301·s¼W±NPSD¹ÏÅ|°_¨Ó
+    % 20230301æ–°å¢å°‡PSDåœ–ç–Šèµ·ä¾†
     hold on; 
     pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
     legend('Rx', 'Tx')
@@ -172,7 +171,7 @@ end
     R6x = Rx(:,1);
     global RxDataSymbEq;
     Receiver(Rx(1:4:end));
-    % Àx¦sscattor¸ê®Æ(¤@µ§¸ê®Æ108*18©Ò¥H¨C18¦C¤@µ§)
+    % å„²å­˜scattorè³‡æ–™(ä¸€ç­†è³‡æ–™108*18æ‰€ä»¥æ¯18åˆ—ä¸€ç­†)
     AllRxDataSymbEq = [AllRxDataSymbEq RxDataSymbEq];
     
 
@@ -187,7 +186,7 @@ end
     %break;
 end
 
-%% µ²§ô
+%% çµæŸ
 fprintf('Transmission and reception finished\n');
 
 % Read the RSSI attributes of both channels
@@ -196,7 +195,7 @@ rssi1 = output{s.getOutChannel('RX1_RSSI')};
 
 s.releaseImpl();
 
-% ¥­§¡¬Y¤@©T©w¶ZÂ÷ªºBER¸ò¬P®y¹Ï
+% å¹³å‡æŸä¸€å›ºå®šè·é›¢çš„BERè·Ÿæ˜Ÿåº§åœ–
 AllBERData = [AllBERData;AllBERDataCol];
 for i=1:108
     for j=1:18
@@ -210,6 +209,6 @@ AverageData = zeros(108,18);
 AverageData = AllRxDataSymbEq(1:108,1:18)./set_looptimes;
 AllRxDataSymbEqAverage = [AllRxDataSymbEqAverage AverageData];
 
-% ±N¸ê®Æ¾É¥X¨ì.mat¤¤
+% å°‡è³‡æ–™å°å‡ºåˆ°.matä¸­
 save('ScattorData.mat', 'AllRxDataSymbEqAverage');
 save('BERData.mat', 'AllBERData');
