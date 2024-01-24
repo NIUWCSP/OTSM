@@ -58,14 +58,14 @@ avg_ber_LMMSE=zeros(1,length(SNR_dB));
 
 det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
-avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
+avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB)); 
 
 
 %% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
-
+%% 
 for iesn0 = 1:length(SNR_dB)
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
