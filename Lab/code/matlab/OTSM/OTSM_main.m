@@ -53,7 +53,7 @@ err_ber_1tap = zeros(1,length(SNR_dB));
 err_ber_LMMSE = zeros(1,length(SNR_dB));
 
 avg_ber_MFGS=zeros(1,length(SNR_dB));
-avg_ber_1tap=zeros(1,length(SNR_dB));
+avg_ber_1tap=zeros(1,length(SNR_dB));%set_looptimes
 avg_ber_LMMSE=zeros(1,length(SNR_dB));
 
 det_iters_MFGS=0;
