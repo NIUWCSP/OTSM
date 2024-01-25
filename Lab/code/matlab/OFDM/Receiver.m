@@ -9,6 +9,17 @@ NumDataOfdmSymb = 18;
 NumDataSubcarrier = 108;
 RxSignalExt(:,1)=RxSignal;
 figure(2);clf;
+
+%% OTFS parameters%%%%%%%%%%
+% N: number of symbols in time
+N = 64;
+% M: number of subcarriers in frequency
+M = 64;
+% Time and frequency resources
+car_fre = 4*10^9;% Carrier frequency
+delta_f = 15*10^3; % subcarrier spacing: 15 KHz
+T = 1/delta_f; %one time symbol duration in OTFS frame
+
 %% Receiver
 NumSyncSymb = NumSyncPreamble*2 + NumFFT;
 NumPilotSymb = NumFFT * 2;
@@ -31,6 +42,23 @@ RxSignalRadioFrame = RxSignalExt(StartIdx:StartIdx+NumRadioFrame-1);
 % Pilot OFDM symbol
 PilotOfdmSymb = reshape(RxSignalRadioFrame(NumSyncSymb+1:NumSyncSymb+NumPilotSymb), [], 2);
 
+ %% OTFS channel generation%%%%
+ % 3GPP channel model
+ max_speed=500;  % km/hr
+[chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
+
+ %% channel output%%%%% 
+[G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+
+ r=zeros(N*M,1);
+ l_max=max(delay_taps);
+         for q=0:N*M-1
+            for l=0:l_max
+                if(q>=l)
+                    r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignal(q-l+1);  %equation (24) in [R1]
+                end
+            end
+        end
 %% Demodulation
 % Estimate carrier frequency offset
 RxPilotSymb = OfdmSignalDemodulation(PilotOfdmSymb, NumFFT, 0, NumDataSubcarrier);
