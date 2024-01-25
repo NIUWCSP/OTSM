@@ -41,7 +41,7 @@ sigma_2 = (abs(eng_sqrt)^2)./SNR;
 
 %% Initializing simulation error count variables
 
-N_fram = 50;%1000;
+N_fram = 1000;
 
 est_info_bits_MFGS=zeros(N_bits_perfram,1);
 est_info_bits_1tap=zeros(N_bits_perfram,1);
