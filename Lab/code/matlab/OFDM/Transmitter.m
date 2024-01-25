@@ -21,7 +21,7 @@ data_grid=zeros(M,N);
 data_grid(1:M_data,1:N)=1;
 % number of symbols per frame
 N_syms_perfram = sum(sum(data_grid));
-% number of bits per frame
+% number of bits per frame 
 N_bits_perfram = N_syms_perfram*M_bits;
 
 %% Transmitter
