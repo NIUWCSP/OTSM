@@ -21,7 +21,7 @@ data_grid=zeros(M,N);
 data_grid(1:M_data,1:N)=1;
 % number of symbols per frame
 N_syms_perfram = sum(sum(data_grid));
-% number of bits per frame 
+% number of bits per frame
 N_bits_perfram = N_syms_perfram*M_bits;
 
 %% Normalized WHT matrix
@@ -52,5 +52,6 @@ TxSignal = [ ...
     TxPilotOfdmSymb;
     TxDataOtsmSymb];
 TxDataBits = Generate_2D_data_grid(N,M,TxDataOtsmSymbMtx,data_grid);
-%% OTSM demodulation%%%%
-tx_signal2=TxDataBits*Wn
+%% OTSM modulation%%%%
+Tx_tilda=TxDataBits*Wn;              %equation (6) in [R1]
+tx_signal2=reshape(Tx_tilda,N*M,1);  %equation (7) in [R1]

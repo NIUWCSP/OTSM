@@ -42,6 +42,7 @@ RxSignalRadioFrame = RxSignalExt(StartIdx:StartIdx+NumRadioFrame-1);
 % Pilot OFDM symbol
 PilotOfdmSymb = reshape(RxSignalRadioFrame(NumSyncSymb+1:NumSyncSymb+NumPilotSymb), [], 2);
 
+ %% OTFS channel generation%%%%
  % 3GPP channel model
  max_speed=500;  % km/hr
 [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
@@ -49,6 +50,15 @@ PilotOfdmSymb = reshape(RxSignalRadioFrame(NumSyncSymb+1:NumSyncSymb+NumPilotSym
  %% channel output%%%%% 
 [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
 
+ r=zeros(N*M,1);
+ l_max=max(delay_taps);
+         for q=0:N*M-1
+            for l=0:l_max
+                if(q>=l)
+                    r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignal(q-l+1);  %equation (24) in [R1]
+                end
+            end
+        end
 %% Demodulation
 % Estimate carrier frequency offset
 RxPilotSymb = OfdmSignalDemodulation(PilotOfdmSymb, NumFFT, 0, NumDataSubcarrier);
