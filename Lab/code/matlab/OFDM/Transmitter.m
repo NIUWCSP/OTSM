@@ -24,6 +24,10 @@ N_syms_perfram = sum(sum(data_grid));
 % number of bits per frame 
 N_bits_perfram = N_syms_perfram*M_bits;
 
+%% Normalized WHT matrix
+Wn=fwht(eye(N));  % Generate the WHT matrix
+Wn=Wn./norm(Wn);  % normalize the WHT matrix
+
 %% Transmitter
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data
@@ -36,8 +40,8 @@ TxPilotOfdmSymb = OfdmSignalModulation(PilotBits, NumFFT, 0);
 % Generate data symbols
 global TxDataBits;
 TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
-TxDataOfdmSymbMtx = qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit'); 
-TxDataOfdmSymb = reshape(TxDataOfdmSymbMtx, [], 1);
+TxDataOtsmSymbMtx = qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit'); 
+TxDataOtsmSymb = reshape(TxDataOtsmSymbMtx, [], 1);
 
 % Reconstruct transmission signal
 TxSignal = [ ...
@@ -46,5 +50,7 @@ TxSignal = [ ...
     SyncOfdmSymb;
     TxPilotOfdmSymb;%通道估測
     TxPilotOfdmSymb;
-    TxDataOfdmSymb];
-tx_signal2 = Generate_2D_data_grid(N,M,TxDataOfdmSymbMtx,data_grid);
+    TxDataOtsmSymb];
+TxDataBits = Generate_2D_data_grid(N,M,TxDataOtsmSymbMtx,data_grid);
+%% OTSM demodulation%%%%
+tx_signal2=TxDataBits*Wn
