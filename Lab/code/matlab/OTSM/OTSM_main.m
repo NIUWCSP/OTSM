@@ -66,7 +66,7 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
 %% 
-for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times 
+for iesn0 = 1:length(SNR_dB)  %set_looptimes 
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
         %% random input bits generation%%%%%
