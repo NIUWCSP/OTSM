@@ -134,7 +134,7 @@ for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times
         [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);
         
         
-        %% GS SOR Iterative ddetection
+        %% GS SOR Iterative detection
         
         n_ite_MRC=50; % maximum number of detector iterations
         omega=1; %damping parameter - reducing omega improves error performance at the cost of increased detector iterations
