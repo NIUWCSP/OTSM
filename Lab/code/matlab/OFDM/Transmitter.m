@@ -41,7 +41,7 @@ TxPilotOfdmSymb = OfdmSignalModulation(PilotBits, NumFFT, 0);
 global TxDataBits;
 TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
 TxDataOtsmSymbMtx = qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit'); 
-TxDataBits = Generate_2D_data_grid(N,M,TxDataOtsmSymbMtx,data_grid);
+Tx = Generate_2D_data_grid(N,M,TxDataOtsmSymbMtx,data_grid);
 TxDataOtsmSymb = reshape(TxDataOtsmSymbMtx, [], 1);
 
 % Reconstruct transmission signal
@@ -54,5 +54,5 @@ TxSignal = [ ...
     TxDataOtsmSymb];
 
 %% OTSM modulation%%%%
-Tx_tilda=TxDataBits*Wn;              %equation (6) in [R1]
+Tx_tilda=Tx*Wn;              %equation (6) in [R1]   %Tx=X
 tx_signal2=reshape(Tx_tilda,N*M,1);  %equation (7) in [R1]
