@@ -70,7 +70,7 @@ for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
         %% random input bits generation%%%%%
-        trans_info_bit = randi([0,1],N_syms_perfram*M_bits,1);
+        trans_info_bit = randi([0,1],N_syms_perfram*M_bits,1);%trans_info_bit =TxDataBits
         %%2D QAM symbols generation %%%%%%%%
         data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*3840        
         %data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod, 0,'gray','bit');  data=2*3840      
