@@ -1,8 +1,10 @@
-function RxDataBits = Receiver(RxSignal)
+function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal)
 
 %%廣域變數宣告
 global TxDataBits;
 global set_looptimes;
+global iesn0
+global ifram
 
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
@@ -33,33 +35,14 @@ delta_f = 15*10^3; % subcarrier spacing: 15 KHz
 T = 1/delta_f; %one time symbol duration in OTFS frame
 
 %% Initializing simulation error count variables
-
-N_fram = 1000;
-
 est_info_bits_MFGS=zeros(N_bits_perfram,1);
 est_info_bits_1tap=zeros(N_bits_perfram,1);
 est_info_bits_LMMSE=zeros(N_bits_perfram,1);
-
-
-err_ber_MFGS = zeros(1,set_looptimes);%bit error rate
-err_ber_1tap = zeros(1,set_looptimes);
-err_ber_LMMSE = zeros(1,set_looptimes);
-
-avg_ber_MFGS=zeros(1,set_looptimes);
-avg_ber_1tap=zeros(1,set_looptimes);
-avg_ber_LMMSE=zeros(1,set_looptimes);
-
-det_iters_MFGS=0;
-no_of_detetor_iterations_MFGS= zeros(set_looptimes,1); %no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
-avg_no_of_iterations_MFGS=zeros(1,set_looptimes);
 
 %% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
-for iesn0 = 1:set_looptimes
-    for ifram = 1:N_fram
-         current_frame_number(iesn0)=ifram;
 
          %% OTFS channel generation%%%%
          % 3GPP channel model
@@ -97,40 +80,5 @@ for iesn0 = 1:set_looptimes
         [est_info_bits_MFGS,det_iters_MFGS,data_MFGS] = Matched_Filter_GS_detector(N,M,M_mod,0,data_grid,Y,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
         [est_info_bits_1tap,data_1tap] = TF_single_tap_equalizer(N,M,M_mod,0,data_grid,Y,H_t_f,Wn);
         [est_info_bits_LMMSE,data_LMMSE] = Block_LMMSE_detector(N,M,M_mod,0,data_grid,Gn_block_matrix,r,Wn);
-
-         %% errors count%%%%%
-        errors_MFGS = sum(xor(est_info_bits_MFGS,TxDataBits));
-        errors_1tap = sum(xor(est_info_bits_1tap,TxDataBits));
-        errors_LMMSE = sum(xor(est_info_bits_LMMSE,TxDataBits));
-
-        
-        err_ber_MFGS(1,iesn0) = err_ber_MFGS(1,iesn0) + errors_MFGS;
-        err_ber_1tap(1,iesn0) = err_ber_1tap(1,iesn0) + errors_1tap;
-        err_ber_LMMSE(1,iesn0) = err_ber_LMMSE(1,iesn0) + errors_LMMSE;
-        
-        no_of_detetor_iterations_MFGS(iesn0)=no_of_detetor_iterations_MFGS(iesn0)+det_iters_MFGS;
-        
-        
-        
-        %%  Error count
-        
-        avg_no_of_iterations_MFGS(iesn0)=no_of_detetor_iterations_MFGS(iesn0)/ifram;
-        avg_ber_MFGS(1,iesn0)=err_ber_MFGS(1,iesn0).'/length(TxDataBits)/ifram;
-        avg_ber_1tap(1,iesn0)=err_ber_1tap(1,iesn0).'/length(TxDataBits)/ifram;
-        avg_ber_LMMSE(1,iesn0)=err_ber_LMMSE(1,iesn0).'/length(TxDataBits)/ifram;
-            
-        %%         DISP error performance details
-        clc
-        disp('####################################################################')
-        fprintf('OTSM-(N,M,QAM size)');disp([N,M,M_mod]);
-        display(current_frame_number,'Number of frames');
-        display(set_looptimes,'set_looptimes');
-        display(avg_ber_MFGS,'Average BER - Matched Filtered Gauss Seidel');
-        display(avg_ber_1tap,'Average BER - single tap equalizer');
-        display(avg_ber_LMMSE,'Average BER - LMMSE equalizer');
-        display(avg_no_of_iterations_MFGS,'Average number of iterations for the MFGS detector');
-        disp('####################################################################')
-        
-    end  
-end
-
+        RxDataBits=0;
+       
