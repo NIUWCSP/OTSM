@@ -11,10 +11,6 @@ if(0)
     Delete_mat;
 end
 
-%設定接收執行次數
-global set_looptimes 
-set_looptimes= 5;
-
 % 載入資料
 if exist('ScattorData.mat','file')
     load('ScattorData.mat');
@@ -42,22 +38,28 @@ M = 64;
 % M_mod: size of QAM constellation
 M_mod = 4;
 M_bits = log2(M_mod);
+% average energy per data symbol
+eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
+
+% SNR and variance of the noise
+% SNR = P/\sigma^2; P: avg. power of albhabet transmitted
+SNR_dB = 10:2.5:20;
+SNR = 10.^(SNR_dB/10);
+sigma_2 = (abs(eng_sqrt)^2)./SNR;
 
 %% Initializing simulation error count variables
 
-N_fram = 1000;
+err_ber_MFGS = zeros(1,length(SNR_dB));%bit error rate
+err_ber_1tap = zeros(1,length(SNR_dB));
+err_ber_LMMSE = zeros(1,length(SNR_dB));
 
-err_ber_MFGS = zeros(1,set_looptimes);%bit error rate
-err_ber_1tap = zeros(1,set_looptimes);
-err_ber_LMMSE = zeros(1,set_looptimes);
-
-avg_ber_MFGS=zeros(1,set_looptimes);
-avg_ber_1tap=zeros(1,set_looptimes);
-avg_ber_LMMSE=zeros(1,set_looptimes);
+avg_ber_MFGS=zeros(1,length(SNR_dB));
+avg_ber_1tap=zeros(1,length(SNR_dB));
+avg_ber_LMMSE=zeros(1,length(SNR_dB));
 
 det_iters_MFGS=0;
-no_of_detetor_iterations_MFGS= zeros(set_looptimes,1); %no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
-avg_no_of_iterations_MFGS=zeros(1,set_looptimes);
+no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1); %no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
+avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
 
 %% Transmit and Receive using MATLAB libiio 串接pluto
         
@@ -85,36 +87,11 @@ avg_no_of_iterations_MFGS=zeros(1,set_looptimes);
   input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
   input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
          
-        
-        
-        %% PLOT TX for Evan_debug 畫出TX的時域圖與頻譜圖
-        
-        TimeScopeTitleStr = 'OFDM-TX-Baseband I/Q Signal';
-        SpectrumTitleStr = 'OFDM-TX-Baseband Signal Spectrum';
-            
-        samp_rate = 40e6;    
-            scope1 = dsp.TimeScope('SampleRate',     samp_rate, ...
-                                  'Title',           TimeScopeTitleStr, ...
-                                  'TimeSpan',        1/samp_rate*(length(txdata)+100), ...
-                                  'YLimits',         [-5 5], ...
-                                  'ShowLegend',      true, ...
-                                  'ShowGrid',        true, ...
-                                  'Position',        [0 300 400 400]);
-                                  
-            step(scope1,txdata);
-            release(scope1);
-        
-        
-        global NoFoundDataTimes;
-        NoFoundDataTimes = 0; %未找到data的次數(沒有通過同步)
-        global AllFoundDataTimes;
-        AllFoundDataTimes= 0; %嘗試接收data的次數(也是環圈執行次數)
-        AllRxDataSymbEq = zeros(0,0); %暫時儲存scattor資料
-        AllBERDataCol = zeros(0,0); %暫時儲存BER資料
+
         
 %% Initializing simulation error count variables
-N_fram = 1000;
-for iesn0 = 1:set_looptimes
+N_fram = 10;
+for iesn0 = 1:length(SNR_dB)
     for ifram = 1:N_fram 
         current_frame_number=zeros(1,iesn0);
         current_frame_number(iesn0)=ifram;
@@ -145,10 +122,7 @@ for iesn0 = 1:set_looptimes
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:4:end));
-            % 儲存scattor資料(一筆資料108*18所以每18列一筆)
-            AllRxDataSymbEq = [AllRxDataSymbEq RxDataSymbEq];
-            
+            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:10:end));
         
     %% errors count%%%%%
     global TxDataBits;
@@ -177,7 +151,7 @@ for iesn0 = 1:set_looptimes
         disp('####################################################################')
         fprintf('OTSM-(N,M,QAM size)');disp([N,M,M_mod]);
         display(current_frame_number,'Number of frames');
-        display(set_looptimes,'set_looptimes');
+        display(SNR_dB,'SNR (dB)');
         display(avg_ber_MFGS,'Average BER - Matched Filtered Gauss Seidel');
         display(avg_ber_1tap,'Average BER - single tap equalizer');
         display(avg_ber_LMMSE,'Average BER - LMMSE equalizer');
@@ -188,28 +162,11 @@ end
 
 
 %% 結束
-fprintf('Transmission and reception finished\n');
+figure(2)
+semilogy(SNR_dB,avg_ber_MFGS,'-o','LineWidth',2,'MarkerSize',8)
+hold on
+semilogy(SNR_dB,avg_ber_1tap,'-x','LineWidth',2,'MarkerSize',8)
+hold on
+semilogy(SNR_dB,avg_ber_LMMSE,'-s','LineWidth',2,'MarkerSize',8)
+legend('MFGS','single tap','LMMSE')
 
-% Read the RSSI attributes of both channels
-rssi1 = output{s.getOutChannel('RX1_RSSI')};
-% rssi2 = output{s.getOutChannel('RX2_RSSI')};
-
-s.releaseImpl();
-
-% 平均某一固定距離的BER跟星座圖
-AllBERData = [AllBERData;AllBERDataCol];
-for i=1:108
-    for j=1:18
-        for k=1:set_looptimes
-            AllRxDataSymbEq(i,j) = AllRxDataSymbEq(i,j)+AllRxDataSymbEq(i,j+18*(k-1));
-            
-        end
-    end
-end
-AverageData = zeros(108,18);
-AverageData = AllRxDataSymbEq(1:108,1:18)./set_looptimes;
-AllRxDataSymbEqAverage = [AllRxDataSymbEqAverage AverageData];
-
-% 將資料導出到.mat中
-save('ScattorData.mat', 'AllRxDataSymbEqAverage');
-save('BERData.mat', 'AllBERData');
