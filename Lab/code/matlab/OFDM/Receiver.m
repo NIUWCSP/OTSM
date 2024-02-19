@@ -1,8 +1,6 @@
 function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal)
 
 %%廣域變數宣告
-global TxDataBits;
-global set_looptimes;
 global iesn0
 global ifram
 

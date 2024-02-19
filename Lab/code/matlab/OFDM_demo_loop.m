@@ -90,7 +90,9 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
 
         
 %% Initializing simulation error count variables
-N_fram = 10;
+N_fram = 1000;
+global iesn0
+global ifram
 for iesn0 = 1:length(SNR_dB)
     for ifram = 1:N_fram 
         current_frame_number=zeros(1,iesn0);
