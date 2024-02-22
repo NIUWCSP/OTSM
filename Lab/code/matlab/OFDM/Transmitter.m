@@ -25,14 +25,17 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
 %% Transmitter
+% Generate pilot symbols
+PilotBits = GetPilotBits();%Preamble的data
 
 % Generate data symbols
 global TxDataBits;
 TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
-TxDataOtsmSymbMtx = qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit'); 
-Tx = Generate_2D_data_grid(N,M,TxDataOtsmSymbMtx,data_grid);
-TxDataOtsmSymb = reshape(TxDataOtsmSymbMtx, [], 1);
+TxDataOtsm = qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');
+Tx = Generate_2D_data_grid(N,M,TxDataOtsm,data_grid);
+TxDataOtsmSymb = reshape(TxDataOtsm, [], 1);
 
 %% OTSM modulation%%%%
 Tx_tilda=Tx*Wn;              %equation (6) in [R1]   %Tx=X
-tx_signal2=reshape(Tx_tilda,N*M,1);  %equation (7) in [R1]
+Tx_tilda_Pilot=Tx_addPilot(Tx_tilda,PilotBits);
+tx_signal2=reshape(Tx_tilda_Pilot,N*M,1);  %equation (7) in [R1]
