@@ -75,6 +75,10 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
         %% OTSM demodulation%%%%
                 Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
+
+        %% OTSM Reget Pilot%%%%
+                Y_tilda_Pilot=reshape(Y_tilda(size(Y_tilda,1),:),[],1);
+                PilotBits = GetPilotBits();
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
         [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);

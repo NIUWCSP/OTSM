@@ -4,7 +4,7 @@ set(0,'defaultfigurecolor','w');
 %加入path
 addpath ..\..\library 
 addpath ..\..\library\matlab 
-addpath ..\..\code\matlab\OTSM
+addpath ..\..\code\matlab\OFDM
 
 %刪除.mat
 if(0)
@@ -69,8 +69,8 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
  s.dev_name = 'ad9361';
  s.in_ch_no = 2;
  s.out_ch_no = 2;
- s.in_ch_size = N*M;
- s.out_ch_size = N*M.*10;
+ s.in_ch_size = length(txdata);
+ s.out_ch_size = length(txdata).*10;
         
  s = s.setupImpl();
         
@@ -98,29 +98,30 @@ for iesn0 = 1:length(SNR_dB)
         current_frame_number=zeros(1,iesn0);
         current_frame_number(iesn0)=ifram;
 
-        %% PLOT RX 畫出RX的圖
-        for i=i:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
-            fprintf('Transmitting Data Block %i ...\n',i);
-            input{1} = reshape(real(txdata),[],1);
-            input{2} = reshape(imag(txdata),[],1);
-            output = stepImpl(s, input);%調用pluto的通道資料
-            fprintf('Data Block %i Received...\n',i);
-        end
-            I = output{1};
-            Q = output{2};
-            Rx = I+1i*Q;
-            figure(1); clf;
-            set(gcf,'name','立鎂科技-RX實際I/Q接收狀態'); % EVAN for debug OK
-            subplot(121);
-            plot(I);
-            hold on;
-            plot(Q);
-            subplot(122);
-            pwelch(Rx, [],[],[], 40e6, 'centered', 'psd');
-            % 20230301新增將PSD圖疊起來
-            hold on; 
-            pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
-            legend('Rx', 'Tx')
+%% PLOT RX 畫出RX的圖
+for i=i:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
+    fprintf('Transmitting Data Block %i ...\n',i);
+    input{1} = real(txdata);
+    input{2} = imag(txdata);
+    output = stepImpl(s, input);%調用pluto的通道資料
+    fprintf('Data Block %i Received...\n',i);
+end
+    I = output{1};
+    Q = output{2};
+    Rx = I+1i*Q;
+    figure(1); clf;%clear figure
+    set(gcf,'name','立鎂科技-RX實際I/Q接收狀態'); % EVAN for debug OK %get current figure
+    subplot(121);
+    plot(I);
+    hold on;
+    plot(Q);
+    subplot(122);
+    pwelch(Rx, [],[],[], 40e6, 'centered', 'psd');
+    % 20230301新增將PSD圖疊起來
+    hold on; %'centered' 表示計算雙邊頻,'psd'表示頻譜類型
+    pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
+    legend('Rx', 'Tx')
+
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;

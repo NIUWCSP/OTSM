@@ -6,7 +6,7 @@ BpskModObj = comm.BPSKModulator('PhaseOffset', pi/4);%'PhaseOffset', pi/4：0度
 NumOfdmSymb = size(Bits, 2);
 MapSymb = zeros(size(Bits));
 for idx = 1:NumOfdmSymb
-    MapSymb(:, idx) = step(BpskModObj,Bits(:, idx));
+    MapSymb(:, idx) = step(qammod(reshape(Bits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit'),Bits(:, idx));
 end
 
 %對抗ISI
