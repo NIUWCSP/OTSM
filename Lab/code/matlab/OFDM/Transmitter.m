@@ -43,14 +43,14 @@ TxDataBits = randi([0,1],N_syms_perfram,1);%TX的data
 TxDataBitsGrid=reshape(TxDataBits,N,[]);
 TxDataOtsm = OtsmSignalModulation(TxDataBitsGrid, NumFFT, 0 , M_mod);
 Tx = Generate_2D_data_grid(N,M,TxDataOtsm,data_grid);
-TxDataOtsmSymb = reshape(TxDataOtsm, [], 1);
+TxDataOtsmSymb = reshape(Tx, [], 1);
 
 %% OTSM modulation%%%%
 Tx_tilda=Tx*Wn;              %equation (6) in [R1]   %Tx=X
 Tx_tilda_Pilot=Tx_addPilot(Tx_tilda,TxPilotOtsmSymb);
 tx_signal=reshape(Tx_tilda_Pilot,N*M,1);  %equation (7) in [R1]
-TxSignal = [ ...
-    SyncOtsmSymb(1:NumSyncPreamble);%"SyncOfdmSymb"三次目的是要方便同步(去除phase offset)
+tx_signal = [ ...
+    SyncOtsmSymb(1:NumSyncPreamble);%"SyncOtsmSymb"三次目的是要方便同步
     SyncOtsmSymb(1:NumSyncPreamble);
     SyncOtsmSymb;
     TxPilotOtsmSymb;%通道估測

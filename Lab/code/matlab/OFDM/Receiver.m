@@ -51,7 +51,22 @@ est_info_bits_LMMSE=zeros(N_bits_perfram,1);
 Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
+% Setting parameters
+NumFFT = 64; %V3  FFT轉換的點數
+NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
+NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 
+NumDataOtsmSymb = 60;
+
+        %% Receiver
+        NumSyncSymb = NumSyncPreamble*2 + NumFFT;
+        NumPilotSymb = NumFFT * 2;
+        NumDataSymb = (NumFFT+0) * NumDataOtsmSymb;
+        NumRadioFrame = NumSyncSymb + NumPilotSymb + NumDataSymb;
+        RxSignalRadioFrame =RxSignal(1:NumRadioFrame);
+
+        % Pilot OTSM symbol
+        PilotOTSmSymb = reshape(RxSignalRadioFrame(NumSyncSymb+1:NumSyncSymb+NumPilotSymb), [], 2);
          %% OTFS channel generation%%%%
          % 3GPP channel model
          max_speed=500;  % km/hr
