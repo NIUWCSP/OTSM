@@ -56,7 +56,7 @@ NumFFT = 64; %V3  FFT轉換的點數
 NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 
-NumDataOtsmSymb = 60;%資料量為64*60(故設為60)
+NumDataOtsmSymb = 64;%資料量為66*64(故設為64)
 PilotNumDataSubcarrier =64;
 DataNumDataSubcarrier =64;
 
@@ -65,7 +65,17 @@ DataNumDataSubcarrier =64;
         NumPilotSymb = NumFFT * 2;
         NumDataSymb = (NumFFT+0) * NumDataOtsmSymb;
         NumRadioFrame = NumSyncSymb + NumPilotSymb + NumDataSymb;
+
+        %%Get RxSignal Only Data
+        
         RxSignalRadioFrame =RxSignal(1:NumRadioFrame);
+        RxSignalRadioFrame=RxSignalRadioFrame(NumSyncSymb + NumPilotSymb+1:NumRadioFrame,1);
+        RxSignalRadioFrame=reshape(RxSignalRadioFrame,[],N);
+        RxSignalDataFrame=zeros(N,M);
+        for idx=1:size(RxSignalRadioFrame,2)
+            RxSignalDataFrame(:,idx)=[RxSignalRadioFrame(1:64,idx)];
+        end
+        RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
 
         % Pilot OTSM symbol
         PilotOtsmSymb = reshape(RxSignalRadioFrame(NumSyncSymb+1:NumSyncSymb+NumPilotSymb), [], 2);
@@ -82,12 +92,12 @@ DataNumDataSubcarrier =64;
         [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
 
          r=zeros(N*M,1);
-         noise= sqrt(sigma_2(iesn0)/2)*(randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
+         noise= sqrt(sigma_2(iesn0)/2)*(randn(size(RxSignalDataFrame)) + 1i*randn(size(RxSignalDataFrame)));
          l_max=max(delay_taps);
          for q=0:N*M-1
            for l=0:l_max
              if(q>=l)
-               r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignalRadioFrame(q-l+1);  %equation (24) in [R1]
+               r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignalDataFrame(q-l+1);  %equation (24) in [R1]
              end
            end
          end

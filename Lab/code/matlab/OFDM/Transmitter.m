@@ -51,13 +51,13 @@ Tx_tilda=Tx*Wn;              %equation (6) in [R1]   %Tx=X
 Tx_tilda_Pilot=Tx_addPilot(Tx_tilda,TxPilotOtsmSymb);
 TxDataOtsmMod=qamdemod(Tx_tilda_Pilot,M_mod,'gray','OutputType','bit');
 TxDataOtsmMod=OtsmSignalModulation(TxDataOtsmMod, NumFFT, 0 , M_mod);
-tx_signal=reshape(Tx_tilda_Pilot,N*M,1);  %equation (7) in [R1]
+tx_Data_signal=reshape(TxDataOtsmMod,[],1);  %equation (7) in [R1]
 tx_signal = [ ...
     SyncOtsmSymb(1:NumSyncPreamble);%"SyncOtsmSymb"三次目的是要方便同步
     SyncOtsmSymb(1:NumSyncPreamble);
     SyncOtsmSymb;
     TxPilotOtsmSymb;%通道估測
     TxPilotOtsmSymb;
-    TxDataOtsmSymb];
+    tx_Data_signal];
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper %1*513
 tx_signal2=rcosflt(tx_signal,1,upsample, 'filter', flt1); %3040(TxSignal)*4(upsample)+(513(flt1)-1)：因為捲積所以要-1
