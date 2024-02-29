@@ -43,9 +43,9 @@ sigma_2 = (abs(eng_sqrt)^2)./SNR;
 
 
 %% Initializing simulation error count variables
-est_info_bits_MFGS=zeros(N_bits_perfram,1);
-est_info_bits_1tap=zeros(N_bits_perfram,1);
-est_info_bits_LMMSE=zeros(N_bits_perfram,1);
+est_info_bits_MFGS=zeros(N_bits_perfram/2,1);
+est_info_bits_1tap=zeros(N_bits_perfram/2,1);
+est_info_bits_LMMSE=zeros(N_bits_perfram/2,1);
 
 %% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix
@@ -56,7 +56,9 @@ NumFFT = 64; %V3  FFT轉換的點數
 NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 
-NumDataOtsmSymb = 60;
+NumDataOtsmSymb = 60;%資料量為64*60(故設為60)
+PilotNumDataSubcarrier =64;
+DataNumDataSubcarrier =64;
 
         %% Receiver
         NumSyncSymb = NumSyncPreamble*2 + NumFFT;
@@ -66,7 +68,11 @@ NumDataOtsmSymb = 60;
         RxSignalRadioFrame =RxSignal(1:NumRadioFrame);
 
         % Pilot OTSM symbol
-        PilotOTSmSymb = reshape(RxSignalRadioFrame(NumSyncSymb+1:NumSyncSymb+NumPilotSymb), [], 2);
+        PilotOtsmSymb = reshape(RxSignalRadioFrame(NumSyncSymb+1:NumSyncSymb+NumPilotSymb), [], 2);
+        RxPilotSymb = OtsmSignalDemodulation(PilotOtsmSymb, NumFFT, 0, PilotNumDataSubcarrier,M_mod);
+        PilotBits = GetPilotBits();%Preamble的data
+        errors_Pilot = sum(xor(RxPilotSymb,PilotBits));
+
          %% OTFS channel generation%%%%
          % 3GPP channel model
          max_speed=500;  % km/hr
@@ -74,26 +80,28 @@ NumDataOtsmSymb = 60;
         
          %% channel output%%%%% 
         [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
-        
+
          r=zeros(N*M,1);
-         noise= sqrt(sigma_2(iesn0)/2)*(randn(size(RxSignal)) + 1i*randn(size(RxSignal)));
+         noise= sqrt(sigma_2(iesn0)/2)*(randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
          l_max=max(delay_taps);
          for q=0:N*M-1
            for l=0:l_max
              if(q>=l)
-               r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignal(q-l+1);  %equation (24) in [R1]
+               r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignalRadioFrame(q-l+1);  %equation (24) in [R1]
              end
            end
          end
          r=r+noise;
 
         %% OTSM demodulation%%%%
+                
                 Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
+                Y = OtsmSignalDemodulation(Y, NumFFT, 0, DataNumDataSubcarrier,M_mod);
 
-        %% OTSM Reget Pilot%%%%
-                Y_tilda_Pilot=reshape(Y_tilda(size(Y_tilda,1),:),[],1);
-                PilotBits = GetPilotBits();
+        %% OTSM Reobtain Pilot%%%%
+                Y_tilda_Pilot=reshape(Y(size(Y,1),:),[],1);
+
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
         [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);

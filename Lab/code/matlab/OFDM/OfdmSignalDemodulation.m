@@ -1,10 +1,10 @@
 
-function OfdmSymb = OfdmSignalDemodulation(ModOfdmSymbWithCP, ...
-                                NumFFT, NumCP, NumDataCarrier)
+function OfdmSymb = OtsmSignalDemodulation(ModOtsmSymbWithCP, ...
+                                NumFFT, NumCP, NumDataCarrier,M_mod,N_bits_perfram)
 
-ModOfdmSymb = ModOfdmSymbWithCP(NumCP+1:end, :);
+ModOtsmSymb = ModOtsmSymbWithCP(NumCP+1:end, :);
 
-OfdmSymbFFT = fft(ModOfdmSymb) / sqrt(NumFFT);
+OfdmSymbFFT = reshape(qamdemod(ModOtsmSymb,M_mod,'gray','OutputType','bit'),N_bits_perfram,1);
 DemodOfdmSymb = [ ...
     OfdmSymbFFT(NumFFT/2+1:end, :);
     OfdmSymbFFT(1:NumFFT/2, :)];

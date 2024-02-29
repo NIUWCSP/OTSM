@@ -31,6 +31,7 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 %% Transmitter
 % Generate pilot symbols
 PilotBits = GetPilotBits();%Preamble的data
+PilotGrid = [zeros(N-1,M);reshape(PilotBits(:,1),1,[])];
 TxPilotOtsmSymb = OtsmSignalModulation(PilotBits, NumFFT, 0 , M_mod);
 
 % Generate synchronization symbols
@@ -39,15 +40,17 @@ SyncOtsmSymb = OtsmSignalModulation(SyncBits, NumFFT, 0 , M_mod);
 
 % Generate data symbols
 global TxDataBits;
-TxDataBits = randi([0,1],N_syms_perfram,1);%TX的data
-TxDataBitsGrid=reshape(TxDataBits,N,[]);
-TxDataOtsm = OtsmSignalModulation(TxDataBitsGrid, NumFFT, 0 , M_mod);
+TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
+%TxDataBitsGrid=reshape(TxDataBits,N,[]);
+TxDataOtsm = qammod(TxDataBits, M_mod,'gray','InputType','bit');
 Tx = Generate_2D_data_grid(N,M,TxDataOtsm,data_grid);
 TxDataOtsmSymb = reshape(Tx, [], 1);
 
 %% OTSM modulation%%%%
 Tx_tilda=Tx*Wn;              %equation (6) in [R1]   %Tx=X
 Tx_tilda_Pilot=Tx_addPilot(Tx_tilda,TxPilotOtsmSymb);
+TxDataOtsmMod=qamdemod(Tx_tilda_Pilot,M_mod,'gray','OutputType','bit');
+TxDataOtsmMod=OtsmSignalModulation(TxDataOtsmMod, NumFFT, 0 , M_mod);
 tx_signal=reshape(Tx_tilda_Pilot,N*M,1);  %equation (7) in [R1]
 tx_signal = [ ...
     SyncOtsmSymb(1:NumSyncPreamble);%"SyncOtsmSymb"三次目的是要方便同步
