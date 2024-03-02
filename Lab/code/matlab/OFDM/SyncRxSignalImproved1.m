@@ -1,4 +1,4 @@
-function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor, numFFT)
+function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor, numFFT,M_mod,M_bits)
 %% Definitions 同步找開頭結尾
 numShortPreambleSamples = 32     * overSampFactor;
 numLongPreambleSamples  = numFFT * overSampFactor;
@@ -11,11 +11,11 @@ frameLen = length(rxFrame);
 startIdx = -1;
 %% Construct the syncSig to be used for fine tuning
 numFFTExt = numFFT * overSampFactor;
-BpskModObj = comm.BPSKModulator('PhaseOffset', pi/4);
 
-syncBits = GetSyncBits();
-syncSymb = step(BpskModObj,syncBits);
-syncSymbExt = [ 0;
+
+syncBits = GetSyncBits();%確保正確解讀接收到的數據
+syncSymb = reshape(qammod(reshape(syncBits,M_bits,size(syncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
+syncSymbExt = [  0;
                 syncSymb(end/2+1:end);
                 zeros(numFFTExt-length(syncSymb)-1, 1);
                 syncSymb(1:end/2)];

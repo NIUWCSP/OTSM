@@ -14,7 +14,7 @@ M_bits = log2(M_mod);
 
 %% delay-Doppler grid symbol placement
 % max delay spread in the channel
-delay_spread = M/16;
+delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
 % data positions of OTFS delay-Doppler domain data symbols  in the 2-D grid
 M_data = M-delay_spread;
 data_grid=zeros(M,N);
@@ -31,33 +31,23 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 %% Transmitter
 % Generate pilot symbols
 PilotBits = GetPilotBits();%Preamble的data
-PilotGrid = [zeros(N-1,M);reshape(PilotBits(:,1),1,[])];
-TxPilotOtsmSymb = OtsmSignalModulation(PilotBits, NumFFT, 0 , M_mod);
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data
-SyncOtsmSymb = OtsmSignalModulation(SyncBits, NumFFT, 0 , M_mod);
 
 % Generate data symbols
 global TxDataBits;
 TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
-%TxDataBitsGrid=reshape(TxDataBits,N,[]);
-TxDataOtsm = qammod(TxDataBits, M_mod,'gray','InputType','bit');
-Tx = Generate_2D_data_grid(N,M,TxDataOtsm,data_grid);
-TxDataOtsmSymb = reshape(Tx, [], 1);
+TxData=qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*2560
+Tx = Generate_2D_data_grid(N,M,TxData,data_grid);
+Tx_Symb=Tx_addPilotSync(Tx,PilotBits,SyncBits,N,M);
 
 %% OTSM modulation%%%%
-Tx_tilda=Tx*Wn;              %equation (6) in [R1]   %Tx=X
-Tx_tilda_Pilot=Tx_addPilot(Tx_tilda,TxPilotOtsmSymb);
-TxDataOtsmMod=qamdemod(Tx_tilda_Pilot,M_mod,'gray','OutputType','bit');
-TxDataOtsmMod=OtsmSignalModulation(TxDataOtsmMod, NumFFT, 0 , M_mod);
-tx_Data_signal=reshape(TxDataOtsmMod,[],1);  %equation (7) in [R1]
+Tx_tilda=Tx_Symb*Wn;              %equation (6) in [R1]   %Tx=X
+%TxDataOtsmSymb=OtsmSignalModulation(Tx_tilda, NumFFT, NumCP);
+tx_Data_signal=reshape(Tx_tilda,[],1);  %equation (7) in [R1]
 tx_signal = [ ...
-    SyncOtsmSymb(1:NumSyncPreamble);%"SyncOtsmSymb"三次目的是要方便同步
-    SyncOtsmSymb(1:NumSyncPreamble);
-    SyncOtsmSymb;
-    TxPilotOtsmSymb;%通道估測
-    TxPilotOtsmSymb;
+    tx_Data_signal(N*M-NumCP+1:N*M,1)
     tx_Data_signal];
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper %1*513
 tx_signal2=rcosflt(tx_signal,1,upsample, 'filter', flt1); %3040(TxSignal)*4(upsample)+(513(flt1)-1)：因為捲積所以要-1

@@ -70,7 +70,7 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
  s.in_ch_no = 2;
  s.out_ch_no = 2;
  s.in_ch_size = length(txdata);
- s.out_ch_size = length(txdata).*5;
+ s.out_ch_size = length(txdata).*10;
         
  s = s.setupImpl();
         
@@ -125,7 +125,7 @@ end
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:5:end));
+            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(txdata);
         
     %% errors count%%%%%
     global TxDataBits;
