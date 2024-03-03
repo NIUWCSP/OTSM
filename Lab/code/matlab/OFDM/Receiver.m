@@ -52,7 +52,7 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
 % Setting parameters
 NumFFT = 64; %V3  FFT轉換的點數
-%NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
+NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 
 PilotSymb=size(GetPilotBits,2)/2;%PilotBits為128個Bits QAM後會除2
@@ -61,12 +61,25 @@ RxSignalExt(:,1)=RxSignal;
 %DataNumDataSubcarrier =64;
 
         %% Receiver 
+        NumSyncSymb = NumFFT+NumSyncPreamble*2;
         NumCPSymb = NumCP;
         NumDataSymb = N*M;
-        NumRadioFrame = NumCPSymb + NumDataSymb;
+        NumRadioFrame = NumSyncSymb + NumCPSymb + NumDataSymb;
+        
 
-        RxSignalRadioFrame =RxSignal(1:NumRadioFrame);
-        RxSignalRadioFrame=RxSignalRadioFrame(NumCPSymb+1:NumRadioFrame,1);
+        StartIdx = SyncRxSignalImproved1(RxSignalExt, 1, NumFFT,M_mod);
+
+        %%JF加入重新賦值=1避免StartIdx == -1時直接中斷程式：
+        global NoFoundDataTimes;
+        if(StartIdx == -1)
+            StartIdx = 1;
+            NoFoundDataTimes=NoFoundDataTimes+1;
+        elseif(StartIdx+NumRadioFrame-1 >= 31680)
+            StartIdx = 1;
+            NoFoundDataTimes=NoFoundDataTimes+1;
+        end
+        RxSignalRadioFrame = RxSignalExt(StartIdx:StartIdx+NumRadioFrame-1);
+        RxSignalRadioFrame=RxSignalRadioFrame(NumCPSymb+NumSyncSymb+1:NumRadioFrame,1);
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
 

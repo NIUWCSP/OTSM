@@ -1,26 +1,31 @@
-function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor, numFFT,M_mod,M_bits)
+function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor, numFFT,M_mod)
 %% Definitions 同步找開頭結尾
-numShortPreambleSamples = 32     * overSampFactor;
+numShortPreambleSamples = 16     * overSampFactor;
 numLongPreambleSamples  = numFFT * overSampFactor;
 
-thresholdCoarse = 0.9;%改回原值
-thresholdFine   = 0.6;%改回原值
+thresholdCoarse = 0.45;%改回原值
+thresholdFine   = 0.3;%改回原值
 
 frameLen = length(rxFrame);
 %% Set start index to an invalid number
 startIdx = -1;
+% M_mod: size of QAM constellation
+M_bits = log2(M_mod);
+
 %% Construct the syncSig to be used for fine tuning
 numFFTExt = numFFT * overSampFactor;
 
 
-syncBits = GetSyncBits();%確保正確解讀接收到的數據
-syncSymb = reshape(qammod(reshape(syncBits,M_bits,size(syncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
-syncSymbExt = [  0;
+SyncBits = GetSyncBits();%確保正確解讀接收到的數據
+syncSymb = reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
+
+syncSymbExt = [ 0
                 syncSymb(end/2+1:end);
                 zeros(numFFTExt-length(syncSymb)-1, 1);
                 syncSymb(1:end/2)];
 
-syncSig = ifft(syncSymbExt) * sqrt(length(syncSymbExt));
+syncSig = ifft(syncSymbExt) * sqrt(length(syncSymbExt)); %快速傅里叶逆变换 %為了使得時域和頻域能量相等
+
 %% Cross correlate different segments of the Rx signal, and the sync signal
 corrShortCoarse  = zeros(1, frameLen);
 corrFine  = zeros(1, frameLen);

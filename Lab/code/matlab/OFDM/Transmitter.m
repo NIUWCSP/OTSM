@@ -34,19 +34,25 @@ PilotBits = GetPilotBits();%Preamble的data
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data
+QamSyncBits=qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit');
+QamSyncBits = OtsmSignalModulation(reshape(QamSyncBits,[],1), NumFFT, 0);
+%QamSyncBits=reshape(QamSyncBits,[],1);
 
 % Generate data symbols
 global TxDataBits;
 TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
 TxData=qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*2560
 Tx = Generate_2D_data_grid(N,M,TxData,data_grid);
-Tx_Symb=Tx_addPilotSync(Tx,PilotBits,SyncBits,N,M);
+Tx_Symb=Tx_addPilot(Tx,PilotBits,N,M_mod);
 
 %% OTSM modulation%%%%
 Tx_tilda=Tx_Symb*Wn;              %equation (6) in [R1]   %Tx=X
 %TxDataOtsmSymb=OtsmSignalModulation(Tx_tilda, NumFFT, NumCP);
 tx_Data_signal=reshape(Tx_tilda,[],1);  %equation (7) in [R1]
 tx_signal = [ ...
+    QamSyncBits(1:NumSyncPreamble)
+    QamSyncBits(1:NumSyncPreamble)
+    QamSyncBits
     tx_Data_signal(N*M-NumCP+1:N*M,1)
     tx_Data_signal];
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper %1*513

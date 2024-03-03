@@ -125,7 +125,7 @@ end
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(txdata);
+            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:4:end));
         
     %% errors count%%%%%
     global TxDataBits;
