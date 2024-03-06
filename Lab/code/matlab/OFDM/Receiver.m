@@ -41,10 +41,6 @@ SNR = 10.^(SNR_dB/10);
 sigma_2 = (abs(eng_sqrt)^2)./SNR;
 
 
-%% Initializing simulation error count variables
-est_info_bits_MFGS=zeros(N_bits_perfram/2,1);
-est_info_bits_1tap=zeros(N_bits_perfram/2,1);
-est_info_bits_LMMSE=zeros(N_bits_perfram/2,1);
 
 %% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix
@@ -111,17 +107,12 @@ RxSignalExt(:,1)=RxSignal;
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
                
 
-        %% OTSM Reobtain Pilot&Sync%%%%
+        %% OTSM Reobtain Pilot%%%%
                 Y_SPS=reshape(Y(M_data+1:end,1:sqrt(PilotSymb)),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
                 %Pilot side
-                Y_Pilot=Y_SPS(PilotSymb+1:PilotSymb*2,1);
+                Y_Pilot=reshape(Y(M_data+sqrt(PilotSymb)+1:M_data+sqrt(PilotSymb)*2,1:sqrt(PilotSymb)),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
                 Pilot_ErrorBits=sum(xor(qamdemod(Y_Pilot,M_mod,'gray','OutputType','bit'),reshape(GetPilotBits,[],1)));
-
-                %Sync side
-                Y_Sync=[Y_SPS(1:PilotSymb,1);
-                        Y_SPS(PilotSymb*2+1:end,1)];
-                
-
+         
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
         [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);
