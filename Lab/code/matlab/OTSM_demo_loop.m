@@ -94,7 +94,7 @@ global AllFoundDataTimes;
 AllFoundDataTimes= 0; %嘗試接收data的次數(也是環圈執行次數)
        
 %% Initializing simulation error count variables
-N_fram = 100;
+N_fram = 10;%100;
 global iesn0
 global ifram
 for iesn0 = 1:length(SNR_dB)
