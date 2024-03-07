@@ -72,7 +72,7 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx:StartIdx+NumDataSymb-1);
+        RxSignalRadioFrame = RxSignalExt(StartIdx-40:StartIdx+NumDataSymb-41);
 
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
@@ -85,7 +85,7 @@ RxSignalExt(:,1)=RxSignal;
         [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
         
          %% channel output%%%%% 
-        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+        [G,~]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
 
          %% OTSM Reobtain Pilot%%%%
                 
@@ -111,17 +111,18 @@ DataOtsmSymb = RxSignalRadioGridCFO(1:M_data,1:M);
 
 % Channel estimation and equalization
 PilotBits = GetPilotBits();
-TxPilotSymb = qammod(reshape(PilotBits,[],1),M_mod,'gray','OutputType','bit');%產生Tx的 BPSK符號序列
-ChanEst = RxPilotSymb(:,1) ./ TxPilotSymb;%通道估计
+Tx_PilotSymb = qammod(reshape(PilotBits,M_bits,[]),M_mod,'gray','InputType','bit');%產生Tx的 BPSK符號序列
+ChanEst = reshape(PilotOtsmSymb,1,[]) ./ Tx_PilotSymb;%通道估计
 global RxDataSymbEq;
-RxDataSymbEq = RxDataSymb ./ repmat(ChanEst, 1, NumDataOfdmSymb);
+RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data,1);
 subplot(232);plot(10*log10(abs(ChanEst).^2)-min(10*log10(abs(ChanEst).^2)));title('channel estimation');%繪製通道估計的幅度譜
-subplot(233);plot(RxDataSymb(:),'*');axis equal;title('scatter before equalization');axis square;
+subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;
 subplot(234);plot(RxDataSymbEq(:).*exp(-1i*pi/4),'.');axis([-1.5,1.5,-1.5,1.5]);title('scatter after equalization'); axis square;%*exp(-1i*pi/4) 的作用是進行相位調整
 
         %% OTSM demodulation%%%%
-                
-                Y_tilda=reshape(RxSignalRadioFrame,M,N);     %equation (11) in [R1]
+                RxSymbEq=[RxDataSymbEq;
+                          zeros(N-M_data,M)  ];
+                Y_tilda=reshape(RxSymbEq,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
                
          

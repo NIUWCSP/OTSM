@@ -44,7 +44,7 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
         seg1 = [seg1
                 rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
      end
-     % Grab first 16 symbols of B (8+8 中間空64格)
+     % Grab first 32 symbols of B (8+8 中間空64格)
      initIdx = initIdx + 2*numShortPreambleSamples;
      seg2=zeros(0);
      for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
