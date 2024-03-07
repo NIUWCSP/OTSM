@@ -57,25 +57,23 @@ RxSignalExt(:,1)=RxSignal;
 %DataNumDataSubcarrier =64;
 
         %% Receiver 
-        NumSyncSymb = NumFFT+NumSyncPreamble*2;
-        NumCPSymb = NumCP;
-        NumDataSymb = N*M;
-        NumRadioFrame = NumSyncSymb + NumCPSymb + NumDataSymb;
-        
 
-        StartIdx = SyncRxSignalImproved1(RxSignalExt, 1, NumFFT,M_mod);
+        NumDataSymb = N*M;
+        
+        %StartIdx = SyncRxSignalImproved2(RxSignalExt,M_mod,N,M);
+        StartIdx = SyncRxSignalImproved1(RxSignalExt, 1, NumFFT,M_mod,N,M);
 
         %%JF加入重新賦值=1避免StartIdx == -1時直接中斷程式：
         global NoFoundDataTimes;
         if(StartIdx == -1)
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
-        elseif(StartIdx+NumRadioFrame-1 >= 31680)
+        elseif(StartIdx+NumDataSymb-1 >= length(RxSignalExt))
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx:StartIdx+NumRadioFrame-1);
-        RxSignalRadioFrame=RxSignalRadioFrame(NumCPSymb+NumSyncSymb+1:NumRadioFrame,1);
+        RxSignalRadioFrame = RxSignalExt(StartIdx:StartIdx+NumDataSymb-1);
+
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
 
@@ -103,12 +101,12 @@ RxSignalExt(:,1)=RxSignal;
 
         %% OTSM demodulation%%%%
                 
-                Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
+                Y_tilda=reshape(RxSignalRadioFrame,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
                
 
         %% OTSM Reobtain Pilot%%%%
-                Y_SPS=reshape(Y(M_data+1:end,1:sqrt(PilotSymb)),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+                
                 %Pilot side
                 Y_Pilot=reshape(Y(M_data+sqrt(PilotSymb)+1:M_data+sqrt(PilotSymb)*2,1:sqrt(PilotSymb)),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
                 Pilot_ErrorBits=sum(xor(qamdemod(Y_Pilot,M_mod,'gray','OutputType','bit'),reshape(GetPilotBits,[],1)));

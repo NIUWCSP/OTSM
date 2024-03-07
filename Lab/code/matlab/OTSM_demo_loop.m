@@ -29,6 +29,7 @@ ip = '192.168.2.1';
 %設定與進入TX函式
 upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
 txdata = Transmitter(upsample);
+txdata = round(txdata .* 2^15);
 
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
@@ -86,9 +87,12 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
   input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
   input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
   input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
-         
 
-        
+global NoFoundDataTimes;
+NoFoundDataTimes = 0; %未找到data的次數(沒有通過同步)
+global AllFoundDataTimes;
+AllFoundDataTimes= 0; %嘗試接收data的次數(也是環圈執行次數)
+       
 %% Initializing simulation error count variables
 N_fram = 100;
 global iesn0

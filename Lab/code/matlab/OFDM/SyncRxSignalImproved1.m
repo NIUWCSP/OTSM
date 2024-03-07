@@ -1,10 +1,14 @@
-function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor, numFFT,M_mod)
+function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor, numFFT,M_mod,N,M)
+%% Normalized WHT matrix
+Wn=fwht(eye(N));  % Generate the WHT matrix
+Wn=Wn./norm(Wn);  % normalize the WHT matrix
+
 %% Definitions 同步找開頭結尾
-numShortPreambleSamples = 16     * overSampFactor;
+numShortPreambleSamples = 32     * overSampFactor;
 numLongPreambleSamples  = numFFT * overSampFactor;
 
-thresholdCoarse = 0.45;%改回原值
-thresholdFine   = 0.3;%改回原值
+thresholdCoarse = 0.9;%改回原值
+thresholdFine   = 0.6;%改回原值
 
 frameLen = length(rxFrame);
 %% Set start index to an invalid number
@@ -13,18 +17,18 @@ startIdx = -1;
 M_bits = log2(M_mod);
 
 %% Construct the syncSig to be used for fine tuning
-numFFTExt = numFFT * overSampFactor;
 
-
+%%調變同步資料
 SyncBits = GetSyncBits();%確保正確解讀接收到的數據
-syncSymb = reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
+QamSyncBits=qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit');
+QamSyncBits=reshape(QamSyncBits,sqrt(size(QamSyncBits,2)),[]);%切成方形矩陣
+%%加入只有同步的網格並做WHT
+SyncGrid=zeros(N,M);
+SyncGrid(1:size(QamSyncBits,1),1:size(QamSyncBits,2))=QamSyncBits;
+SyncGrid_tilda=SyncGrid*Wn;
+SyncSymb_tilda=reshape(SyncGrid_tilda(1:size(QamSyncBits,1),1:size(QamSyncBits,2)),[],1);
 
-syncSymbExt = [ 0
-                syncSymb(end/2+1:end);
-                zeros(numFFTExt-length(syncSymb)-1, 1);
-                syncSymb(1:end/2)];
-
-syncSig = ifft(syncSymbExt) * sqrt(length(syncSymbExt)); %快速傅里叶逆变换 %為了使得時域和頻域能量相等
+syncSig = SyncSymb_tilda;
 
 %% Cross correlate different segments of the Rx signal, and the sync signal
 corrShortCoarse  = zeros(1, frameLen);
@@ -32,13 +36,21 @@ corrFine  = zeros(1, frameLen);
 % Region of interest, for visualization and plotting
 roi = zeros(1, frameLen);
 
-for i = 1: frameLen - 2*numShortPreambleSamples - 3*numLongPreambleSamples
+for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
      % Grab A1
      initIdx = i;
-     seg1 = rxFrame( initIdx : initIdx + numShortPreambleSamples - 1 );
-     % Grab first 32 symbols of B
+     seg1=zeros(0);
+     for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
+        seg1 = [seg1
+                rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
+     end
+     % Grab first 16 symbols of B (8+8 中間空64格)
      initIdx = initIdx + 2*numShortPreambleSamples;
-     seg2 = rxFrame( initIdx : initIdx + numShortPreambleSamples - 1 );
+     seg2=zeros(0);
+     for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
+        seg2 = [seg2
+                rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
+     end
      % Normalization factors
      seg1Avg = sqrt(sum(abs(seg1).^2));
      seg2Avg = sqrt(sum(abs(seg2).^2));
@@ -47,12 +59,16 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 3*numLongPreambleSamples
      corrShortCoarse1(i) = abs(sum(seg1 .* conj(seg2)));
      corrShortCoarse2(i) = (seg1Avg * seg2Avg);
      % If short preambles are correlated, we are
-     % at a potential coarse begining of an OFDM frame, therefore check
+     % at a potential coarse begining of an OTSM frame, therefore check
      % Fine synchronization criterion
      if (corrShortCoarse(i) > thresholdCoarse)
          % Grab B pilot
-         initIdx  = i + 2*numShortPreambleSamples;
-         segPilot = rxFrame(initIdx : initIdx + numLongPreambleSamples - 1);
+         initIdx  = i + size(QamSyncBits,2);
+         segPilot=zeros(0);
+        for k = 0:numLongPreambleSamples/size(QamSyncBits,1)-1
+            segPilot = [segPilot
+                        rxFrame( initIdx+k*M+1 : initIdx+k*M + size(QamSyncBits,2) ,1)];
+        end
          % Normalization factors
          segPilotAvg = sqrt(sum(abs(segPilot).^2));
          syncSigAvg  = sqrt(sum(abs(syncSig) .^2));
@@ -69,9 +85,9 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 3*numLongPreambleSamples
 end
 
 if (startIdx == -1)
-    disp('No OFDM frame was found')
+    disp('No OTSM frame was found')
 else
-    disp(['OFDM frame startIdx = ', num2str(startIdx)]);
+    disp(['OTSM frame startIdx = ', num2str(startIdx)]);
 end
 
 subplot(231)
