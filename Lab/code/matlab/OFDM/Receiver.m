@@ -72,7 +72,7 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx-40:StartIdx+NumDataSymb-41);
+        RxSignalRadioFrame = RxSignalExt(StartIdx:StartIdx+NumDataSymb-1);
 
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);

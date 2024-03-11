@@ -39,7 +39,7 @@ roi = zeros(1, frameLen);
 for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
      % Grab A1
      initIdx = i;
-     seg1=zeros(0);
+     seg1=zeros(0);    
      for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
         seg1 = [seg1
                 rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
@@ -61,7 +61,7 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
      % If short preambles are correlated, we are
      % at a potential coarse begining of an OTSM frame, therefore check
      % Fine synchronization criterion
-     if (corrShortCoarse(i) > thresholdCoarse)
+    if (corrShortCoarse(i) > thresholdCoarse)
          % Grab B pilot
          initIdx  = i + size(QamSyncBits,2);
          segPilot=zeros(0);

@@ -50,6 +50,5 @@ tx_Data_signal=reshape(Tx_tilda,[],1);  %equation (7) in [R1]
 tx_signal = [ ...
     tx_Data_signal(N*M-NumCP+1:N*M,1)
     tx_Data_signal];
-tx_signal2 = tx_signal;
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper 
 tx_signal2=rcosflt(tx_signal,1,upsample, 'filter', flt1); %3040(TxSignal)*4(upsample)+(513(flt1)-1)：因為捲積所以要-1
