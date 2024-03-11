@@ -94,7 +94,7 @@ global AllFoundDataTimes;
 AllFoundDataTimes= 0; %嘗試接收data的次數(也是環圈執行次數)
        
 %% Initializing simulation error count variables
-N_fram = 10;%100;
+N_fram = 100;
 global iesn0
 global ifram
 for iesn0 = 1:length(SNR_dB)
@@ -174,6 +174,6 @@ semilogy(SNR_dB,avg_ber_MFGS,'-o','LineWidth',2,'MarkerSize',8)
 hold on
 semilogy(SNR_dB,avg_ber_1tap,'-x','LineWidth',2,'MarkerSize',8)
 hold on
-semilogy(SNR_dB,avg_ber_LMMSE,'-s','LineWidth',2,'MarkerSize',8)
+semilogy(SNR_dB,avg_ber_LMMSE,'-square','LineWidth',2,'MarkerSize',8)
 legend('MFGS','single tap','LMMSE')
 
