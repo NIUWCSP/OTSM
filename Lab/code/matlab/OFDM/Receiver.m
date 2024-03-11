@@ -19,11 +19,11 @@ eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 % max delay spread in the channel
 delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
 % data positions of OTFS delay-Doppler domain data symbols  in the 2-D grid
-M_data = M-delay_spread;
+M_data = M-delay_spread;%64-24=40
 data_grid=zeros(M,N);
 data_grid(1:M_data,1:N)=1;
 % number of symbols per frame
-N_syms_perfram = sum(sum(data_grid));
+N_syms_perfram = sum(sum(data_grid));%64*40=2,560
 % number of bits per frame
 N_bits_perfram = N_syms_perfram*M_bits;
 
