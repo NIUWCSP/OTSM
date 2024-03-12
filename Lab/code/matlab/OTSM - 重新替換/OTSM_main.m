@@ -73,7 +73,7 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
 %% 
-txdata = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
+[tx_signal2,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
 for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times 
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
