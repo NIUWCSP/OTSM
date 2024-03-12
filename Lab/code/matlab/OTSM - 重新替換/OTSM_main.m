@@ -28,8 +28,6 @@ N_syms_perfram = sum(sum(data_grid));
 % number of bits per frame
 N_bits_perfram = N_syms_perfram*M_bits;
 
-
-
 % Time and frequency resources
 car_fre = 4*10^9;% Carrier frequency
 delta_f = 15*10^3; % subcarrier spacing: 15 KHz
@@ -40,8 +38,6 @@ T = 1/delta_f; %one time symbol duration in OTFS frame
 SNR_dB = 10:2.5:20;
 SNR = 10.^(SNR_dB/10);
 sigma_2 = (abs(eng_sqrt)^2)./SNR;
-
-
 
 %% Initializing simulation error count variables
 
@@ -64,16 +60,16 @@ det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
 avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB)); 
 
+% Normalized WHT matrix
+Wn=fwht(eye(N));  % Generate the WHT matrix
+Wn=Wn./norm(Wn);  % normalize the WHT matrix
+current_frame_number=zeros(1,length(SNR_dB));
+%% Transmitter
+[tx_signal2,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
 %% Transmit and Receive using MATLAB libiio 串接pluto
 
 [input, output,s] = configureAD9361(ip, txdata); % System Object Configuration
 
-%% Normalized WHT matrix
-Wn=fwht(eye(N));  % Generate the WHT matrix
-Wn=Wn./norm(Wn);  % normalize the WHT matrix
-current_frame_number=zeros(1,length(SNR_dB));
-%% 
-[tx_signal2,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
 for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times 
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
