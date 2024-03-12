@@ -15,6 +15,7 @@ eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 %% delay-Doppler grid symbol placement
 % max delay spread in the channel
 delay_spread = M/16;
+%delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
 % data positions of OTFS delay-Doppler domain data symbols  in the 2-D grid
 M_data = M-delay_spread;
 data_grid=zeros(M,N);
@@ -66,6 +67,8 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
 %% 
+upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真
+txdata = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
 for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times 
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
