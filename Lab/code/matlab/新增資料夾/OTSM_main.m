@@ -1,7 +1,7 @@
 close all
 clear all
 rng(1)
-function [add]=
+function [newadd]=
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
 N = 64;
