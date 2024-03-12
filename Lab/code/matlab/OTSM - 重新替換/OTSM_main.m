@@ -1,6 +1,8 @@
-close all
-clear all
-rng(1)
+%% **********************此範例僅適用於單機自收自發使用-立鎂科技********************************
+[AllRxDataSymbEqAverage, AllBERData,ip, upsample] = pluto();
+%txdata = Transmitter(upsample);
+%txdata = round(txdata .* 2^15);
+
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
 N = 64;
@@ -60,6 +62,9 @@ det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
 avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB)); 
 
+%% Transmit and Receive using MATLAB libiio 串接pluto
+
+[input, output,s] = configureAD9361(ip, txdata); % System Object Configuration
 
 %% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix
