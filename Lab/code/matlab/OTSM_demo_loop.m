@@ -31,7 +31,7 @@ upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真
 txdata = Transmitter(upsample);
 txdata = round(txdata .* 2^15);
 
-%% OTFS parameters%%%%%%%%%%
+%%% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
 N = 64;
 % M: number of subcarriers in frequency
@@ -47,6 +47,7 @@ eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 SNR_dB = 10:2.5:20;
 SNR = 10.^(SNR_dB/10);
 sigma_2 = (abs(eng_sqrt)^2)./SNR;
+%%%
 
 %% Initializing simulation error count variables
 
@@ -129,7 +130,7 @@ end
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:4:end));
+            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end));
         
     %% errors count%%%%%
     global TxDataBits;
