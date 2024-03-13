@@ -1,8 +1,7 @@
-%% **********************此範例僅適用於單機自收自發使用-立鎂科技********************************
-[ip, upsample] = pluto();
-%txdata = Transmitter(upsample);
-%txdata = round(txdata .* 2^15);
-
+close all
+clear all
+rng(1)
+function [newadd]=
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
 N = 64;
@@ -17,7 +16,6 @@ eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 %% delay-Doppler grid symbol placement
 % max delay spread in the channel
 delay_spread = M/16;
-%delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
 % data positions of OTFS delay-Doppler domain data symbols  in the 2-D grid
 M_data = M-delay_spread;
 data_grid=zeros(M,N);
@@ -26,6 +24,8 @@ data_grid(1:M_data,1:N)=1;
 N_syms_perfram = sum(sum(data_grid));
 % number of bits per frame
 N_bits_perfram = N_syms_perfram*M_bits;
+
+
 
 % Time and frequency resources
 car_fre = 4*10^9;% Carrier frequency
@@ -37,6 +37,8 @@ T = 1/delta_f; %one time symbol duration in OTFS frame
 SNR_dB = 10:2.5:20;
 SNR = 10.^(SNR_dB/10);
 sigma_2 = (abs(eng_sqrt)^2)./SNR;
+
+
 
 %% Initializing simulation error count variables
 
@@ -59,16 +61,12 @@ det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1);
 avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB)); 
 
-% Normalized WHT matrix
+
+%% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
-%% Transmitter
-[tx_signal2,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
-%% Transmit and Receive using MATLAB libiio 串接pluto
-
-[input, output,s] = configureAD9361(ip, txdata); % System Object Configuration
-
+%% 
 for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times 
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
