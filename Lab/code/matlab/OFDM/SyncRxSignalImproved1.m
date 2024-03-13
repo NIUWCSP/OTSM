@@ -84,8 +84,7 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
                        (segPilotAvg * syncSigAvg);
          if corrFine(i) > thresholdFine
              % Mark this index in the region of interest
-             roi(i) = 1;
-             break
+             roi(i) = 1;            
              if startIdx == -1
                 startIdx = i;
              end
