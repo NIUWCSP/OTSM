@@ -76,7 +76,7 @@ for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
         %% Transmitter
-        [z] = Transmitter(N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);                      
+        [trans_info_bit,z] = Transmitter(N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);                      
         %% OTFS channel generation%%%%
         
         %         %% test channel
@@ -89,9 +89,9 @@ for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times
 
         
          %% Transmit and Receive using MATLAB libiio 串接pluto
-        [input, output] = PlutoSet(z); % System Object Configuration
+        [output] = PlutoSet(z); % System Object Configuration
         %% Receiver
-        [Y] = Receiver(N,M,car_fre,delta_f,T,iesn0,sigma_2,z,Wn);
+        [G,r,Y] = Receiver(N,M,car_fre,delta_f,T,iesn0,sigma_2,z,Wn);
         
         %% test: the received time domain signal can be generated element by element (using gs) or in the matrix form (using r=G.s).
         %         r_test=G*s+noise;                            %equation (31) in [R1]

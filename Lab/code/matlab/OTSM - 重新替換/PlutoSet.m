@@ -1,4 +1,4 @@
-function [input, output] = PlutoSet(txdata)   
+function [output] = PlutoSet(txdata)   
 
 %刪除.mat
 if(0)
