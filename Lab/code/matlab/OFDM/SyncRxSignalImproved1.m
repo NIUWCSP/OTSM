@@ -39,18 +39,22 @@ roi = zeros(1, frameLen);
 for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
      % Grab A1
      initIdx = i;
-     seg1=zeros(0);    
-     for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
-        seg1 = [seg1
-                rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
-     end
-     % Grab first 32 symbols of B (8+8 中間空64格)
+     seg1 = rxFrame( initIdx : initIdx + numShortPreambleSamples - 1 );
+     % Grab first 32 symbols of B
      initIdx = initIdx + 2*numShortPreambleSamples;
-     seg2=zeros(0);
-     for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
-        seg2 = [seg2
-                rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
-     end
+     seg2 = rxFrame( initIdx : initIdx + numShortPreambleSamples - 1 );
+%      seg1=zeros(0);    
+%      for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
+%         seg1 = [seg1
+%                 rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
+%      end
+%      % Grab first 32 symbols of B (8+8 中間空64格)
+%      initIdx = initIdx + 2*numShortPreambleSamples;
+%      seg2=zeros(0);
+%      for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
+%         seg2 = [seg2
+%                 rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
+%      end
      % Normalization factors
      seg1Avg = sqrt(sum(abs(seg1).^2));
      seg2Avg = sqrt(sum(abs(seg2).^2));
@@ -63,12 +67,16 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
      % Fine synchronization criterion
     if (corrShortCoarse(i) > thresholdCoarse)
          % Grab B pilot
-         initIdx  = i + size(QamSyncBits,2);
-         segPilot=zeros(0);
-        for k = 0:numLongPreambleSamples/size(QamSyncBits,1)-1
-            segPilot = [segPilot
-                        rxFrame( initIdx+k*M+1 : initIdx+k*M + size(QamSyncBits,2) ,1)];
-        end
+%         initIdx  = i + 40+size(QamSyncBits,2);
+%         segPilot=zeros(0);
+%         for k = 0:numLongPreambleSamples/size(QamSyncBits,1)-1
+%             segPilot = [segPilot
+%                         rxFrame( initIdx+k*M+1 : initIdx+k*M + size(QamSyncBits,2) ,1)];
+%         end
+         
+         initIdx  = i + 2*numShortPreambleSamples;
+         segPilot = rxFrame(initIdx : initIdx + numLongPreambleSamples - 1);
+
          % Normalization factors
          segPilotAvg = sqrt(sum(abs(segPilot).^2));
          syncSigAvg  = sqrt(sum(abs(syncSig) .^2));
@@ -77,6 +85,7 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
          if corrFine(i) > thresholdFine
              % Mark this index in the region of interest
              roi(i) = 1;
+             break
              if startIdx == -1
                 startIdx = i;
              end
