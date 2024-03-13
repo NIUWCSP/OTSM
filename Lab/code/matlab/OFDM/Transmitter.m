@@ -31,14 +31,6 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 %% Transmitter
 % Generate pilot symbols
 PilotBits = GetPilotBits();%Preamble的data
-QamPilotBits=qammod(reshape(PilotBits,M_bits,size(PilotBits,2)/2), M_mod,'gray','InputType','bit');
-%QamSyncBits=reshape(QamSyncBits,[],1);
-QamPilotBits=reshape(QamPilotBits,sqrt(size(QamPilotBits,2)),[]);%切成方形矩陣
-%%加入只有同步的網格並做WHT
-PilotGrid=zeros(N,M);
-PilotGrid(1:size(QamPilotBits,1),1:size(QamPilotBits,2))=QamPilotBits;
-PilotGrid_tilda=PilotGrid*Wn;
-PilotSymb_tilda=reshape(PilotGrid_tilda(1:size(QamPilotBits,1),1:size(QamPilotBits,2)),[],1);
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data

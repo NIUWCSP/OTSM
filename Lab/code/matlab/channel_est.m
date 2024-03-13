@@ -6,7 +6,12 @@ delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
 % data positions of OTFS delay-Doppler domain data symbols  in the 2-D grid
 M_data = M-delay_spread;%64-24=40
 M_bits = log2(M_mod);
+NumDataN=N-delay_spread;
 PilotSymb=size(GetPilotBits,2)/2;%PilotBits為128個Bits QAM後會除2
+
+%% Normalized WHT matrix
+Wn=fwht(eye(N));  % Generate the WHT matrix
+Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
 % Estimate carrier frequency offset
 XCorrPilot = Y_OTSM_Pilot(:,1)' * Y_OTSM_Pilot(:,2);%導頻符號的交叉相關
@@ -26,10 +31,16 @@ DataOtsmSymb = RxSignalRadioGridCFO(1:M_data,1:M);
 
 % Channel estimation and equalization
 PilotBits = GetPilotBits();
-Tx_PilotSymb = qammod(reshape(PilotBits,M_bits,[]),M_mod,'gray','InputType','bit');%產生Tx的 BPSK符號序列
+QamPilotSymb = qammod(reshape(PilotBits,M_bits,[]),M_mod,'gray','InputType','bit');
+QamPilotSymbGrid= reshape(QamPilotSymb,sqrt(size(QamPilotSymb,2)),[]);
+WnPilotSymb=zeros(N,M);
+WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2))) = QamPilotSymbGrid;
+WnPilotSymb=WnPilotSymb*Wn;
+Tx_PilotSymb=reshape(WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2))),1,[]);
+
 ChanEst = reshape(PilotOtsmSymb,1,[]) ./ Tx_PilotSymb;%通道估计
 global RxDataSymbEq;
-RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data,1);
+RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, N,1);
 subplot(232);plot(10*log10(abs(ChanEst).^2)-min(10*log10(abs(ChanEst).^2)));title('channel estimation');%繪製通道估計的幅度譜
 subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;
 subplot(234);plot(RxDataSymbEq(:).*exp(-1i*pi/4),'.');axis([-1.5,1.5,-1.5,1.5]);title('scatter after equalization'); axis square;%*exp(-1i*pi/4) 的作用是進行相位調整
