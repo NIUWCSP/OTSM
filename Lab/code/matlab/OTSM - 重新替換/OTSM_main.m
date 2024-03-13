@@ -64,7 +64,7 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
 %% Transmitter
-[tx_signal2,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
+[txdata,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
 %% Transmit and Receive using MATLAB libiio 串接pluto
 
 [input, output,s] = configureAD9361(ip, txdata); % System Object Configuration
