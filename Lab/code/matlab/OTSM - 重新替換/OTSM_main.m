@@ -69,25 +69,7 @@ for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
         %% Transmitter
-        [txdata,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
-        %% Transmit and Receive using MATLAB libiio 串接pluto
-        [input, output,s] = configureAD9361(ip, txdata); % System Object Configuration
-        %% Receiver
-        
-        
-        %% random input bits generation%%%%%
-        trans_info_bit = randi([0,1],N_syms_perfram*M_bits,1);%trans_info_bit =TxDataBits
-        %%2D QAM symbols generation %%%%%%%%
-        data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*3840        
-        %data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod, 0,'gray','bit');  data=2*3840      
-        X = Generate_2D_data_grid(N,M,data,data_grid);
-        
-        
-        %% OTSM modulation%%%%
-        X_tilda=X*Wn;               %equation (6) in [R1]
-        s = reshape(X_tilda,N*M,1); %equation (7) in [R1]
-        
-        
+        [z] = Transmitter(N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);                      
         %% OTFS channel generation%%%%
         
         %         %% test channel
@@ -96,33 +78,11 @@ for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times
         %         delay_taps=[0,1,2,3];  %% maximum value should be less than the channel delay spread
         %         Doppler_taps=[0,1,2,3];
         
-        % 3GPP channel model
-        max_speed=500;  % km/hr
-        [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
-        
-        
-        
-        
-        %% channel output%%%%%
-        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
-        
-        r=zeros(N*M,1);
-        noise= sqrt(sigma_2(iesn0)/2)*(randn(size(s)) + 1i*randn(size(s)));
-        l_max=max(delay_taps);
-        for q=0:N*M-1
-            for l=0:l_max
-                if(q>=l)
-                    r(q+1)=r(q+1)+gs(l+1,q+1)*s(q-l+1);  %equation (24) in [R1]
-                end
-            end
-        end
-        r=r+noise;
-        
-        
-        %% OTSM demodulation%%%%
-        Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
-        Y = Y_tilda*Wn;             %equation (12) in [R1]
-        
+        % 3GPP channel modelG
+         %% Transmit and Receive using MATLAB libiio 串接pluto
+        [input, output] = configureAD9361(ip, z); % System Object Configuration
+        %% Receiver
+        [Y] = Receiver(N,M,car_fre,delta_f,T,iesn0,sigma_2,z,Wn);
         
         %% test: the received time domain signal can be generated element by element (using gs) or in the matrix form (using r=G.s).
         %         r_test=G*s+noise;                            %equation (31) in [R1]

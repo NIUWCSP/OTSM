@@ -1,12 +1,12 @@
-function [input, output,s] = configureAD9361(ip, txdata)
+function [input, output] = configureAD9361(ip, z)
     % System Object Configuration
     s = iio_sys_obj_matlab; % MATLAB libiio Constructor
     s.ip_address = ip;
     s.dev_name = 'ad9361';
     s.in_ch_no = 2;
     s.out_ch_no = 2;
-    s.in_ch_size = length(txdata);
-    s.out_ch_size = length(txdata) * 10;
+    s.in_ch_size = length(z);
+    s.out_ch_size = length(z) * 10;
     
     s = s.setupImpl();
     
