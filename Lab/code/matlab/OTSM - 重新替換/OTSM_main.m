@@ -1,6 +1,5 @@
 %% **********************此範例僅適用於單機自收自發使用-立鎂科技********************************
-upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真
-[AllRxDataSymbEqAverage, AllBERData,ip, upsample] = pluto();
+[ip, upsample] = pluto();
 %txdata = Transmitter(upsample);
 %txdata = round(txdata .* 2^15);
 

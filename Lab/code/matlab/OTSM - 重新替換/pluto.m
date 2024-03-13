@@ -1,5 +1,5 @@
-function [AllRxDataSymbEqAverage, AllBERData,ip, upsample] = pluto()
-%% **********************此範例僅適用於單機自收自發使用-立鎂科技********************************
+function [ip, upsample] = pluto()
+
 clearvars -except times;close all;warning off; %預設環境
 set(0,'defaultfigurecolor','w'); 
 %加入path
