@@ -40,7 +40,7 @@ Tx_PilotSymb=reshape(WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+
 
 ChanEst = reshape(PilotOtsmSymb,1,[]) ./ Tx_PilotSymb;%通道估计
 global RxDataSymbEq;
-RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, N,1);
+RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data,1);
 subplot(232);plot(10*log10(abs(ChanEst).^2)-min(10*log10(abs(ChanEst).^2)));title('channel estimation');%繪製通道估計的幅度譜
 subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;
 subplot(234);plot(RxDataSymbEq(:).*exp(-1i*pi/4),'.');axis([-1.5,1.5,-1.5,1.5]);title('scatter after equalization'); axis square;%*exp(-1i*pi/4) 的作用是進行相位調整

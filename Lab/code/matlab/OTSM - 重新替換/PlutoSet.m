@@ -1,10 +1,4 @@
 function [input, output] = PlutoSet(txdata)   
-clearvars -except times;close all;warning off; %預設環境
-set(0,'defaultfigurecolor','w'); 
-%加入path
-addpath ..\..\library 
-addpath ..\..\library\matlab 
-addpath ..\..\code\matlab\OFDM
 
 %刪除.mat
 if(0)
@@ -31,8 +25,8 @@ ip = '192.168.2.1';
     s.dev_name = 'ad9361';
     s.in_ch_no = 2;
     s.out_ch_no = 2;
-    s.in_ch_size = length(z);
-    s.out_ch_size = length(z) * 10;
+    s.in_ch_size = length(txdata);
+    s.out_ch_size = length(txdata) * 10;
     
     s = s.setupImpl();
     

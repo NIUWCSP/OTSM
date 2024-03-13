@@ -1,7 +1,14 @@
 %% **********************此範例僅適用於單機自收自發使用-立鎂科技********************************
-[ip, upsample] = pluto();
-%txdata = Transmitter(upsample);
-%txdata = round(txdata .* 2^15);
+
+clearvars -except times;close all;warning off; %預設環境
+set(0,'defaultfigurecolor','w'); 
+%加入path
+addpath ..\..\library 
+addpath ..\..\library\matlab 
+addpath ..\..\code\matlab\OFDM
+
+%設定與進入TX函式
+upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真
 
 %% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
@@ -79,8 +86,10 @@ for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times
         %         Doppler_taps=[0,1,2,3];
         
         % 3GPP channel modelG
+
+        
          %% Transmit and Receive using MATLAB libiio 串接pluto
-        [input, output] = configureAD9361(ip, z); % System Object Configuration
+        [input, output] = PlutoSet(z); % System Object Configuration
         %% Receiver
         [Y] = Receiver(N,M,car_fre,delta_f,T,iesn0,sigma_2,z,Wn);
         
