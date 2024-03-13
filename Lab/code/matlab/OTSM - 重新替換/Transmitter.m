@@ -8,8 +8,9 @@ function [trans_info_bit,z] = Transmitter(N,M,M_mod,M_bits,data_grid,N_syms_perf
         data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*3840        
         %data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod, 0,'gray','bit');  data=2*3840      
         X = Generate_2D_data_grid(N,M,data,data_grid);
+        X_addPilot=Tx_addPilotSync(X,GetPilotBits(),GetSyncBits(),N,M_mod);
         
         
         %% OTSM modulation%%%%
-        X_tilda=X*Wn;               %equation (6) in [R1]
+        X_tilda=X_addPilot*Wn;               %equation (6) in [R1]
         z = reshape(X_tilda,N*M,1); %equation (7) in [R1]
