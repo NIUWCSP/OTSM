@@ -63,16 +63,17 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
 Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 current_frame_number=zeros(1,length(SNR_dB));
-%% Transmitter
-[txdata,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
-%% Transmit and Receive using MATLAB libiio 串接pluto
 
-[input, output,s] = configureAD9361(ip, txdata); % System Object Configuration
-
+%% tx,channel.rx
 for iesn0 = 1:length(SNR_dB)  %iesn0=loop_times 
     for ifram = 1:N_fram
         current_frame_number(iesn0)=ifram;
-        %% random input bits generation%%%%%
+        %% Transmitter
+        [txdata,TxDataBits] = Transmitter(upsample,N,M,M_mod,M_bits,data_grid,N_syms_perfram,Wn);
+        %% Transmit and Receive using MATLAB libiio 串接pluto
+
+        [input, output,~] = configureAD9361(ip, txdata); % System Object Configuration
+        %%random input bits generation%%%%%
         trans_info_bit = randi([0,1],N_syms_perfram*M_bits,1);%trans_info_bit =TxDataBits
         %%2D QAM symbols generation %%%%%%%%
         data=qammod(reshape(trans_info_bit,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*3840        
