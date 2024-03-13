@@ -1,6 +1,6 @@
 function tx_signal2 = Transmitter(upsample)
 %NumFFT = 64;%V3 FFT轉換的點數
-%NumSyncPreamble = 32;%V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
+NumSyncPreamble = 32;%V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16;%V3 CP：循環前綴，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 
 %% OTFS parameters%%%%%%%%%%
@@ -31,10 +31,25 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 %% Transmitter
 % Generate pilot symbols
 PilotBits = GetPilotBits();%Preamble的data
+QamPilotBits=qammod(reshape(PilotBits,M_bits,size(PilotBits,2)/2), M_mod,'gray','InputType','bit');
+%QamSyncBits=reshape(QamSyncBits,[],1);
+QamPilotBits=reshape(QamPilotBits,sqrt(size(QamPilotBits,2)),[]);%切成方形矩陣
+%%加入只有同步的網格並做WHT
+PilotGrid=zeros(N,M);
+PilotGrid(1:size(QamPilotBits,1),1:size(QamPilotBits,2))=QamPilotBits;
+PilotGrid_tilda=PilotGrid*Wn;
+PilotSymb_tilda=reshape(PilotGrid_tilda(1:size(QamPilotBits,1),1:size(QamPilotBits,2)),[],1);
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data
+QamSyncBits=qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit');
 %QamSyncBits=reshape(QamSyncBits,[],1);
+QamSyncBits=reshape(QamSyncBits,sqrt(size(QamSyncBits,2)),[]);%切成方形矩陣
+%%加入只有同步的網格並做WHT
+SyncGrid=zeros(N,M);
+SyncGrid(1:size(QamSyncBits,1),1:size(QamSyncBits,2))=QamSyncBits;
+SyncGrid_tilda=SyncGrid*Wn;
+SyncSymb_tilda=reshape(SyncGrid_tilda(1:size(QamSyncBits,1),1:size(QamSyncBits,2)),[],1);
 
 % Generate data symbols
 global TxDataBits;
@@ -48,7 +63,11 @@ Tx_tilda=Tx_Symb*Wn;              %equation (6) in [R1]   %Tx=X
 %TxDataOtsmSymb=OtsmSignalModulation(Tx_tilda, NumFFT, NumCP);
 tx_Data_signal=reshape(Tx_tilda,[],1);  %equation (7) in [R1]
 tx_signal = [ ...
-    tx_Data_signal(N*M-NumCP+1:N*M,1)
+    SyncSymb_tilda(1:NumSyncPreamble);
+    SyncSymb_tilda(1:NumSyncPreamble);
+    SyncSymb_tilda;
+    tx_Data_signal(N*M-NumCP+1:N*M,1);
     tx_Data_signal];
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper 
 tx_signal2=rcosflt(tx_signal,1,upsample, 'filter', flt1); %3040(TxSignal)*4(upsample)+(513(flt1)-1)：因為捲積所以要-1
+
