@@ -72,7 +72,7 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx+NumCP:StartIdx+NumCP+NumDataSymb-1);
+        RxSignalRadioFrame = RxSignalExt(StartIdx+NumCP+NumFFT*2:StartIdx+NumCP+NumFFT*2+NumDataSymb-1);
 
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
@@ -85,7 +85,19 @@ RxSignalExt(:,1)=RxSignal;
         [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
         
          %% channel output%%%%% 
-        [G,~]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+
+        r=zeros(N*M,1);
+        noise = sqrt(sigma_2(iesn0)/2) * (randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
+        l_max=max(delay_taps);
+        for q=0:N*M-1
+            for l=0:l_max
+                if(q>=l)
+                    r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignalRadioFrame(q-l+1);  %equation (24) in [R1]
+                end
+            end
+        end
+        r=r+noise;
 
          %% OTSM Reobtain Pilot%%%%
                 
@@ -99,13 +111,14 @@ RxSignalExt(:,1)=RxSignal;
         %% OTSM demodulation%%%%
                 RxSymbEq=[RxDataSymbEq;
                           zeros(N-M_data,M)  ];
-                Y_tilda=reshape(RxSymbEq,M,N);     %equation (11) in [R1]
+                RxEq = RxSymbEq*Wn;
+                Y_tilda=reshape(RxSignalRadioFrame,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
                
          
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
-        [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,RxSignalRadioFrame);
+        [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);
         
          %% GS SOR Iterative detection
         

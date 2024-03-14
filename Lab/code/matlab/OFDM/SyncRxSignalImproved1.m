@@ -36,7 +36,7 @@ corrFine  = zeros(1, frameLen);
 % Region of interest, for visualization and plotting
 roi = zeros(1, frameLen);
 
-for i = 1: frameLen - 2*numShortPreambleSamples - 8*numLongPreambleSamples
+for i = 1: frameLen - 2*numShortPreambleSamples - 3*numLongPreambleSamples
      % Grab A1
      initIdx = i;
      seg1 = rxFrame( initIdx : initIdx + numShortPreambleSamples - 1 );

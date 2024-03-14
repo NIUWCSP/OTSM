@@ -29,7 +29,7 @@ ip = '192.168.2.1';
 %設定與進入TX函式
 upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
 txdata = Transmitter(upsample);
-txdata = round(txdata .* 2^15);
+txdata = round(txdata.*2^15);
 
 %%% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
@@ -96,7 +96,7 @@ global AllFoundDataTimes;
 AllFoundDataTimes= 0; %嘗試接收data的次數(也是環圈執行次數)
        
 %% Initializing simulation error count variables
-N_fram = 100;
+N_fram = 10;
 global iesn0
 global ifram
 for iesn0 = 1:length(SNR_dB)
@@ -115,23 +115,12 @@ end
     I = output{1};
     Q = output{2};
     Rx = I+1i*Q;
-    figure(1); clf;%clear figure
-    set(gcf,'name','立鎂科技-RX實際I/Q接收狀態'); % EVAN for debug OK %get current figure
-    subplot(121);
-    plot(I);
-    hold on;
-    plot(Q);
-    subplot(122);
-    pwelch(Rx, [],[],[], 40e6, 'centered', 'psd');
-    % 20230301新增將PSD圖疊起來
-    hold on; %'centered' 表示計算雙邊頻,'psd'表示頻譜類型
-    pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
-    legend('Rx', 'Tx')
+
 
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(txdata(1:upsample:end));
+            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(txdata);
         
     %% errors count%%%%%
     global TxDataBits;
