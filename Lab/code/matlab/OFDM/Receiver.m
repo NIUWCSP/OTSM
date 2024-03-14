@@ -50,13 +50,13 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 NumFFT = 64; %V3  FFT轉換的點數
 NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
-
+%%  Receiver
 PilotSymb=size(GetPilotBits,2)/2;%PilotBits為128個Bits QAM後會除2
 RxSignalExt(:,1)=RxSignal;
 %PilotNumDataSubcarrier =64;
 %DataNumDataSubcarrier =64;
 
-        %% Receiver 
+    
 
         NumDataSymb = N*M;
         
