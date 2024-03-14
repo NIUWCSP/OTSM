@@ -81,12 +81,12 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
  output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
         
  % Set the attributes of AD9361
-  input{s.getInChannel('RX_LO_FREQ')} = 4000e6;
+  input{s.getInChannel('RX_LO_FREQ')} = 2400e6;
   input{s.getInChannel('RX_SAMPLING_FREQ')} = 40e6;
   input{s.getInChannel('RX_RF_BANDWIDTH')} = 20e6;
   input{s.getInChannel('RX1_GAIN_MODE')} = 'manual';%% slow_attack manual
   input{s.getInChannel('RX1_GAIN')} = 1;
-  input{s.getInChannel('TX_LO_FREQ')} = 4000e6;
+  input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
   input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
   input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
 

@@ -20,13 +20,7 @@ M_bits = log2(M_mod);
 
 %%調變同步資料
 SyncBits = GetSyncBits();%確保正確解讀接收到的數據
-QamSyncBits=qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit');
-QamSyncBits=reshape(QamSyncBits,sqrt(size(QamSyncBits,2)),[]);%切成方形矩陣
-%%加入只有同步的網格並做WHT
-SyncGrid=zeros(N,M);
-SyncGrid(1:size(QamSyncBits,1),1:size(QamSyncBits,2))=QamSyncBits;
-SyncGrid_tilda=SyncGrid*Wn;
-SyncSymb_tilda=reshape(SyncGrid_tilda(1:size(QamSyncBits,1),1:size(QamSyncBits,2)),[],1);
+SyncSymb_tilda=QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn);
 
 syncSig = SyncSymb_tilda;
 
@@ -67,15 +61,15 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 3*numLongPreambleSamples
      % Fine synchronization criterion
     if (corrShortCoarse(i) > thresholdCoarse)
          % Grab B pilot
-%         initIdx  = i + 40+size(QamSyncBits,2);
+%         initIdx  = i + numFFT*2+40+size(QamSyncBits,2);
 %         segPilot=zeros(0);
 %         for k = 0:numLongPreambleSamples/size(QamSyncBits,1)-1
 %             segPilot = [segPilot
 %                         rxFrame( initIdx+k*M+1 : initIdx+k*M + size(QamSyncBits,2) ,1)];
 %         end
          
-         initIdx  = i + 2*numShortPreambleSamples;
-         segPilot = rxFrame(initIdx : initIdx + numLongPreambleSamples - 1);
+          initIdx  = i + 2*numShortPreambleSamples;
+          segPilot = rxFrame(initIdx : initIdx + numLongPreambleSamples - 1);
 
          % Normalization factors
          segPilotAvg = sqrt(sum(abs(segPilot).^2));

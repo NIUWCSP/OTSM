@@ -31,17 +31,11 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 %% Transmitter
 % Generate pilot symbols
 PilotBits = GetPilotBits();%Preamble的data
+PilotSymb_tilda = QamAndTilda(PilotBits,M_mod,M_bits,N,M,Wn);
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data
-QamSyncBits=qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit');
-%QamSyncBits=reshape(QamSyncBits,[],1);
-QamSyncBits=reshape(QamSyncBits,sqrt(size(QamSyncBits,2)),[]);%切成方形矩陣
-%%加入只有同步的網格並做WHT
-SyncGrid=zeros(N,M);
-SyncGrid(1:size(QamSyncBits,1),1:size(QamSyncBits,2))=QamSyncBits;
-SyncGrid_tilda=SyncGrid*Wn;
-SyncSymb_tilda=reshape(SyncGrid_tilda(1:size(QamSyncBits,1),1:size(QamSyncBits,2)),[],1);
+SyncSymb_tilda = QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn);
 
 % Generate data symbols
 global TxDataBits;
@@ -58,6 +52,7 @@ TxSignal = [ ...
     SyncSymb_tilda(1:NumSyncPreamble);
     SyncSymb_tilda(1:NumSyncPreamble);
     SyncSymb_tilda;
+    PilotSymb_tilda;
     tx_Data_signal(N*M-NumCP+1:N*M,1);
     tx_Data_signal];
 %flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper 
