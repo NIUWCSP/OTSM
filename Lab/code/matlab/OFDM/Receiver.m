@@ -51,14 +51,14 @@ NumFFT = 64; %V3  FFT轉換的點數
 NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 %%  Receiver
-PilotSymb=size(GetPilotBits,2)/2;%PilotBits為128個Bits QAM後會除2
 RxSignalExt(:,1)=RxSignal;
 %PilotNumDataSubcarrier =64;
 %DataNumDataSubcarrier =64;
 
-    
-
+        NumSyncSymb =  NumSyncPreamble*2+size(GetSyncBits,2)/2;%
+        NumPilotSymb = size(GetPilotBits,2)/2;%PilotBits為128個Bits QAM後會除2
         NumDataSymb = N*M;
+        NumRadioSymb = NumSyncSymb + NumPilotSymb + NumCP + NumDataSymb;
         
         %StartIdx = SyncRxSignalImproved2(RxSignalExt,M_mod,N,M);
         StartIdx = SyncRxSignalImproved1(RxSignalExt, 1, NumFFT,M_mod,N,M);
@@ -72,7 +72,7 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx+NumCP+NumFFT*2:StartIdx+NumCP+NumFFT*2+NumDataSymb-1);
+        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb + NumPilotSymb + NumCP:StartIdx+NumRadioSymb-1);
 
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
@@ -103,7 +103,7 @@ RxSignalExt(:,1)=RxSignal;
                 
          %Pilot side
          RxSignalGrid=reshape(RxSignalRadioFrame,N,M);
-         Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(PilotSymb)+1:M_data+sqrt(PilotSymb)*2,1:sqrt(PilotSymb)),1,[]);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+         Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(NumPilotSymb)+1:M_data+sqrt(NumPilotSymb)*2,1:sqrt(NumPilotSymb)),1,[]);%傳送資料時Pilot和Sync皆以8*8的形式傳送
 
         % Estimate carrier frequency offset
         [RxDataSymbEq] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_Pilot);
