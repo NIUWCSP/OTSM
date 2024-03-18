@@ -1,6 +1,5 @@
 function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal)
 
-figure(2);clf;
 
 %%廣域變數宣告
 global iesn0
@@ -32,7 +31,7 @@ N_bits_perfram = N_syms_perfram*M_bits;
 
 
 % Time and frequency resources
-car_fre = 4*10^9;% Carrier frequency
+car_fre = 2.4*10^9;% Carrier frequency
 delta_f = 15*10^3; % subcarrier spacing: 15 KHz
 T = 1/delta_f; %one time symbol duration in OTFS frame
 
@@ -62,6 +61,7 @@ RxSignalExt(:,1)=RxSignal;
         NumDataSymb = N*M;
         NumRadioSymb = NumSyncSymb + NumPilotSymb + NumCP + NumDataSymb;
         
+        figure(2);clf;
         %StartIdx = SyncRxSignalImproved2(RxSignalExt,M_mod,N,M);
         StartIdx = SyncRxSignalImproved1(RxSignalExt, 1, NumFFT,M_mod,N,M);
 
@@ -123,7 +123,7 @@ RxSignalExt(:,1)=RxSignal;
                           zeros(N-M_data,M)  ];
                 RxEq = RxSymbEq*Wn;
             %主要解調變
-                Y_tilda=reshape(RxSignalRadioFrame,M,N);     %equation (11) in [R1]
+                Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
                
          
@@ -139,8 +139,8 @@ RxSignalExt(:,1)=RxSignal;
             omega=0.25;
         end
         decision=1; %1-hard decision, 0-soft decision
-        [est_info_bits_MFGS,det_iters_MFGS,~] = Matched_Filter_GS_detector(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
-        [est_info_bits_1tap,~] = TF_single_tap_equalizer(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,Wn);
+        [est_info_bits_MFGS,det_iters_MFGS,~] = Matched_Filter_GS_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Y,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
+        [est_info_bits_1tap,~] = TF_single_tap_equalizer(N,M,M_mod,sigma_2(iesn0),data_grid,Y,H_t_f,Wn);
         [est_info_bits_LMMSE,~] = Block_LMMSE_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Gn_block_matrix,r,Wn);
         RxDataBits=0;
        

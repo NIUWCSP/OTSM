@@ -4,10 +4,10 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
 %% Definitions 同步找開頭結尾
-numShortPreambleSamples = 32     * overSampFactor;
+numShortPreambleSamples = 16     * overSampFactor;
 numLongPreambleSamples  = numFFT * overSampFactor;
 
-thresholdCoarse = 0.9;%改回原值
+thresholdCoarse = 0.6;%改回原值
 thresholdFine   = 0.6;%改回原值
 
 frameLen = length(rxFrame);
@@ -23,6 +23,7 @@ SyncBits = GetSyncBits();%確保正確解讀接收到的數據
 SyncSymb_tilda=QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn);
 
 syncSig = SyncSymb_tilda;
+%syncSig = ifft(SyncSymb_tilda) * sqrt(length(SyncSymb_tilda));
 
 %% Cross correlate different segments of the Rx signal, and the sync signal
 corrShortCoarse  = zeros(1, frameLen);

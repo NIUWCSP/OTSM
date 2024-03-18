@@ -1,21 +1,5 @@
 function [Rx] = PlutoSet(txdata)   
 
-%刪除.mat
-if(0)
-    Delete_mat;
-end
-
-% 載入資料
-if exist('ScattorData.mat','file')
-    load('ScattorData.mat');
-else
-    AllRxDataSymbEqAverage = zeros(0,0); %儲存Scattor資料
-end
-if exist('BERData.mat','file')
-    load('BERData.mat');
-else
-    AllBERData = zeros(0,0); %儲存BER資料
-end
 %設定pluto IP
 ip = '192.168.2.1';
     
@@ -42,12 +26,13 @@ ip = '192.168.2.1';
     input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
     input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
     input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
-
+for i=1:4 
     input{1} = real(txdata);
     input{2} = imag(txdata);
     output = stepImpl(s, input);%調用pluto的通道資料
-
+end
     I = output{1};
     Q = output{2};
     Rx = I+1i*Q;
+
 end

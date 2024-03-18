@@ -6,6 +6,7 @@ addpath ..\..\library
 addpath ..\..\library\matlab 
 addpath ..\..\code\matlab\OFDM
 
+
 %刪除.mat
 if(0)
     Delete_mat;
@@ -23,8 +24,8 @@ else
     AllBERData = zeros(0,0); %儲存BER資料
 end
 
-%設定pluto IP
-ip = '192.168.2.1';
+global NoFoundDataTimes;
+NoFoundDataTimes = 0;
 
 
 
@@ -76,14 +77,14 @@ for iesn0 = 1:length(SNR_dB)
         txdata = Transmitter(upsample);
         txdata = round(txdata.*2^15);
 
-%% PLOT RX 畫出RX的圖
-Rx=PlutoSet(txdata);
+        %% PLOT RX 畫出RX的圖
+        Rx=PlutoSet(txdata);
 
 
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(txdata);
+            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end));
         
     %% errors count%%%%%
     global TxDataBits;
