@@ -105,10 +105,17 @@ RxSignalExt(:,1)=RxSignal;
                 
          %Pilot side
          RxSignalGrid=reshape(RxSignalRadioFrame,N,M);
-         Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(size(GetPilotBits,2)/2)+1:M_data+8*2,1:sqrt(size(GetPilotBits,2)/2)),[],2);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+         Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(size(GetPilotBits,2)/2)+1:M_data+8*2,1:sqrt(size(GetPilotBits,2)/2)),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+
+         %%把pilot的8*8資料 拆成4*8、4*8
+         Y_OTSM_PilotSymb=zeros(size(Y_OTSM_Pilot,1)/2,2);
+         for i=0:sqrt(size(Y_OTSM_Pilot,1))-1
+               Y_OTSM_PilotSymb(i*4+1:i*4+4,1) = Y_OTSM_Pilot(i*8+1:i*8+4,1);
+               Y_OTSM_PilotSymb(i*4+1:i*4+4,2) = Y_OTSM_Pilot(i*8+5:i*8+8,1);
+         end
 
         % Estimate carrier frequency offset
-        [RxDataSymbEq,ChanEst] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_Pilot);
+        [RxDataSymbEq,ChanEst] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_PilotSymb);
 
         %% OTSM demodulation%%%%
             %EQ測試用
@@ -132,8 +139,8 @@ RxSignalExt(:,1)=RxSignal;
             omega=0.25;
         end
         decision=1; %1-hard decision, 0-soft decision
-        [est_info_bits_MFGS,det_iters_MFGS,data_MFGS] = Matched_Filter_GS_detector(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,RxSignalRadioFrame,Wn,decision);
-        [est_info_bits_1tap,data_1tap] = TF_single_tap_equalizer(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,Wn);
-        [est_info_bits_LMMSE,data_LMMSE] = Block_LMMSE_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Gn_block_matrix,r,Wn);
+        [est_info_bits_MFGS,det_iters_MFGS,~] = Matched_Filter_GS_detector(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
+        [est_info_bits_1tap,~] = TF_single_tap_equalizer(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,Wn);
+        [est_info_bits_LMMSE,~] = Block_LMMSE_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Gn_block_matrix,r,Wn);
         RxDataBits=0;
        
