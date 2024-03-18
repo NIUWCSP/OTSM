@@ -1,5 +1,7 @@
 function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal)
 
+figure(2);clf;
+
 %%廣域變數宣告
 global iesn0
 
@@ -56,7 +58,7 @@ RxSignalExt(:,1)=RxSignal;
 %DataNumDataSubcarrier =64;
 
         NumSyncSymb =  NumSyncPreamble*2+size(GetSyncBits,2)/2;%
-        NumPilotSymb = size(GetPilotBits,2)/2;%PilotBits為128個Bits QAM後會除2
+        NumPilotSymb = 0;%PilotBits為128個Bits QAM後會除2
         NumDataSymb = N*M;
         NumRadioSymb = NumSyncSymb + NumPilotSymb + NumCP + NumDataSymb;
         
@@ -103,22 +105,24 @@ RxSignalExt(:,1)=RxSignal;
                 
          %Pilot side
          RxSignalGrid=reshape(RxSignalRadioFrame,N,M);
-         Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(NumPilotSymb)+1:M_data+sqrt(NumPilotSymb)*2,1:sqrt(NumPilotSymb)),1,[]);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+         Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(size(GetPilotBits,2)/2)+1:M_data+8*2,1:sqrt(size(GetPilotBits,2)/2)),[],2);%傳送資料時Pilot和Sync皆以8*8的形式傳送
 
         % Estimate carrier frequency offset
-        [RxDataSymbEq] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_Pilot);
+        [RxDataSymbEq,ChanEst] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_Pilot);
 
         %% OTSM demodulation%%%%
+            %EQ測試用
                 RxSymbEq=[RxDataSymbEq;
                           zeros(N-M_data,M)  ];
                 RxEq = RxSymbEq*Wn;
+            %主要解調變
                 Y_tilda=reshape(RxSignalRadioFrame,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
                
          
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
-        [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);
+        [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r,ChanEst);
         
          %% GS SOR Iterative detection
         
@@ -128,8 +132,8 @@ RxSignalExt(:,1)=RxSignal;
             omega=0.25;
         end
         decision=1; %1-hard decision, 0-soft decision
-        [est_info_bits_MFGS,det_iters_MFGS,data_MFGS] = Matched_Filter_GS_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Y,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,RxSignalRadioFrame,Wn,decision);
-        [est_info_bits_1tap,data_1tap] = TF_single_tap_equalizer(N,M,M_mod,sigma_2(iesn0),data_grid,Y,H_t_f,Wn);
+        [est_info_bits_MFGS,det_iters_MFGS,data_MFGS] = Matched_Filter_GS_detector(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,RxSignalRadioFrame,Wn,decision);
+        [est_info_bits_1tap,data_1tap] = TF_single_tap_equalizer(N,M,M_mod,sigma_2(iesn0),data_grid,RxEq,H_t_f,Wn);
         [est_info_bits_LMMSE,data_LMMSE] = Block_LMMSE_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Gn_block_matrix,r,Wn);
         RxDataBits=0;
        

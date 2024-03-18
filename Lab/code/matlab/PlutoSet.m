@@ -1,4 +1,4 @@
-function [output] = PlutoSet(txdata)   
+function [Rx] = PlutoSet(txdata)   
 
 %刪除.mat
 if(0)
@@ -46,4 +46,8 @@ ip = '192.168.2.1';
     input{1} = real(txdata);
     input{2} = imag(txdata);
     output = stepImpl(s, input);%調用pluto的通道資料
+
+    I = output{1};
+    Q = output{2};
+    Rx = I+1i*Q;
 end

@@ -1,4 +1,4 @@
-function [RxDataSymbEq] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_Pilot)
+function [RxDataSymbEq,ChanEst] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_Pilot)
 
 %%基本參數設置
 % max delay spread in the channel
@@ -23,7 +23,7 @@ RxSigalRadioFrameCmpCFO = RxSignalRadioFrame .* ...
 RxSignalRadioGridCFO = reshape(RxSigalRadioFrameCmpCFO,N,M);
 
 % Reobtain pilot data
-PilotOtsmSymb = RxSignalRadioGridCFO(M_data+sqrt(PilotSymb)+1:M_data+sqrt(PilotSymb)*2,1:sqrt(PilotSymb));%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
+PilotOtsmSymb = reshape(RxSignalRadioGridCFO(M_data+sqrt(PilotSymb)+1:M_data+sqrt(PilotSymb)*2,1:sqrt(PilotSymb)),1,[]);%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
 
 % Data OFDM symbol
 DataOtsmSymb = RxSignalRadioGridCFO(1:M_data,1:M);
@@ -38,8 +38,8 @@ WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSym
 WnPilotSymb=WnPilotSymb*Wn;
 Tx_PilotSymb=reshape(WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2))),1,[]);
 
-ChanEst = reshape(PilotOtsmSymb,1,[]) ./ Tx_PilotSymb;%通道估计
-global RxDataSymbEq;
+ChanEst = PilotOtsmSymb ./ reshape(Tx_PilotSymb,size(PilotOtsmSymb,1),[]);%通道估计
+
 RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data,1);
 subplot(232);plot(10*log10(abs(ChanEst).^2)-min(10*log10(abs(ChanEst).^2)));title('channel estimation');%繪製通道估計的幅度譜
 subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;

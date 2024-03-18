@@ -52,7 +52,6 @@ TxSignal = [ ...
     SyncSymb_tilda(1:NumSyncPreamble);
     SyncSymb_tilda(1:NumSyncPreamble);
     SyncSymb_tilda;
-    PilotSymb_tilda;
     tx_Data_signal(N*M-NumCP+1:N*M,1);
     tx_Data_signal];
 %flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper 

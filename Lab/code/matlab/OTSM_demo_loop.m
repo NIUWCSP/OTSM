@@ -26,10 +26,7 @@ end
 %設定pluto IP
 ip = '192.168.2.1';
 
-%設定與進入TX函式
-upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
-txdata = Transmitter(upsample);
-txdata = round(txdata.*2^15);
+
 
 %%% OTFS parameters%%%%%%%%%%
 % N: number of symbols in time
@@ -64,32 +61,7 @@ det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1); %no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
 avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
 
-%% Transmit and Receive using MATLAB libiio 串接pluto
-        
-% System Object Configuration
- s = iio_sys_obj_matlab; % MATLAB libiio Constructor
- s.ip_address = ip;
- s.dev_name = 'ad9361';
- s.in_ch_no = 2;
- s.out_ch_no = 2;
- s.in_ch_size = length(txdata);
- s.out_ch_size = length(txdata).*10;
-        
- s = s.setupImpl();
-        
- input = cell(1, s.in_ch_no + length(s.iio_dev_cfg.cfg_ch));
- output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
-        
- % Set the attributes of AD9361
-  input{s.getInChannel('RX_LO_FREQ')} = 2400e6;
-  input{s.getInChannel('RX_SAMPLING_FREQ')} = 40e6;
-  input{s.getInChannel('RX_RF_BANDWIDTH')} = 20e6;
-  input{s.getInChannel('RX1_GAIN_MODE')} = 'manual';%% slow_attack manual
-  input{s.getInChannel('RX1_GAIN')} = 1;
-  input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
-  input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
-  input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
-       
+
 %% Initializing simulation error count variables
 N_fram = 10;
 global iesn0
@@ -99,17 +71,13 @@ for iesn0 = 1:length(SNR_dB)
         current_frame_number=zeros(1,iesn0);
         current_frame_number(iesn0)=ifram;
 
+        %設定與進入TX函式
+        upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
+        txdata = Transmitter(upsample);
+        txdata = round(txdata.*2^15);
+
 %% PLOT RX 畫出RX的圖
-for i=i:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
-    fprintf('Transmitting Data Block %i ...\n',i);
-    input{1} = real(txdata);
-    input{2} = imag(txdata);
-    output = stepImpl(s, input);%調用pluto的通道資料
-    fprintf('Data Block %i Received...\n',i);
-end
-    I = output{1};
-    Q = output{2};
-    Rx = I+1i*Q;
+Rx=PlutoSet(txdata);
 
 
             %% PLOT RX
@@ -155,7 +123,7 @@ end
 
 
 %% 結束
-figure(2)
+figure(3)
 semilogy(SNR_dB,avg_ber_MFGS,'-o','LineWidth',2,'MarkerSize',8)
 hold on
 semilogy(SNR_dB,avg_ber_1tap,'-x','LineWidth',2,'MarkerSize',8)

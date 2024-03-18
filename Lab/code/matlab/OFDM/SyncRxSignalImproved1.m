@@ -92,7 +92,7 @@ else
     disp(['OTSM frame startIdx = ', num2str(startIdx)]);
 end
 
-subplot(231)
+subplot(231);
 set(gcf, 'Position', [1300, 400, 600, 500]);
 tAxis = (0:frameLen-1)/((1.4e6 * overSampFactor)/10^3);
 hold on
