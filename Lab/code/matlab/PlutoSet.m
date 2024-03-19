@@ -10,7 +10,7 @@ ip = '192.168.2.1';
     s.in_ch_no = 2;
     s.out_ch_no = 2;
     s.in_ch_size = length(txdata);
-    s.out_ch_size = length(txdata) * 10;
+    s.out_ch_size = length(txdata) * 4;
     
     s = s.setupImpl();
     
@@ -34,5 +34,17 @@ end
     I = output{1};
     Q = output{2};
     Rx = I+1i*Q;
+    figure(1); clf;%clear figure
+    set(gcf,'name','立鎂科技-RX實際I/Q接收狀態'); % EVAN for debug OK %get current figure
+    subplot(121);
+    plot(I);
+    hold on;
+    plot(Q);
+    subplot(122);
+    pwelch(Rx, [],[],[], 40e6, 'centered', 'psd');
+    % 20230301新增將PSD圖疊起來
+    hold on; %'centered' 表示計算雙邊頻,'psd'表示頻譜類型
+    pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
+    legend('Rx', 'Tx')
 
 end

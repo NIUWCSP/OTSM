@@ -7,7 +7,7 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 numShortPreambleSamples = 16     * overSampFactor;
 numLongPreambleSamples  = numFFT * overSampFactor;
 
-thresholdCoarse = 0.6;%改回原值
+thresholdCoarse = 0.9;%改回原值
 thresholdFine   = 0.6;%改回原值
 
 frameLen = length(rxFrame);

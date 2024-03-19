@@ -125,7 +125,7 @@ RxSignalExt(:,1)=RxSignal;
             %主要解調變
                 Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
-               
+         subplot(235);plot(r,'*');title('r');      
          
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
