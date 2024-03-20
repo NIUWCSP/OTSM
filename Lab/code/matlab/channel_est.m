@@ -23,7 +23,7 @@ RxSigalRadioFrameCmpCFO = RxSignalRadioFrame .* ...
 RxSignalRadioGridCFO = reshape(RxSigalRadioFrameCmpCFO,N,M);
 
 % Reobtain pilot data
-PilotOtsmSymb = reshape(RxSignalRadioGridCFO(M_data+sqrt(PilotSymb)+1:M_data+sqrt(PilotSymb)*2,1:sqrt(PilotSymb)),1,[]);%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
+PilotOtsmSymb = (RxSignalRadioGridCFO(M_data+sqrt(PilotSymb)+1:M_data+sqrt(PilotSymb)*2,1:sqrt(PilotSymb)));%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
 
 % Data OFDM symbol
 DataOtsmSymb = RxSignalRadioGridCFO(1:M_data,1:M);
@@ -36,13 +36,14 @@ QamPilotSymbGrid= reshape(QamPilotSymb,sqrt(size(QamPilotSymb,2)),[]);
 WnPilotSymb=zeros(N,M);
 WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2))) = QamPilotSymbGrid;
 WnPilotSymb=WnPilotSymb*Wn;
-Tx_PilotSymb=reshape(WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2))),1,[]);
+Tx_PilotSymb=WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2)));
 
-ChanEst = PilotOtsmSymb ./ reshape(Tx_PilotSymb,size(PilotOtsmSymb,1),[]);%通道估计
+ChanEst = PilotOtsmSymb ./ Tx_PilotSymb;%通道估计
 
-RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data,1);
-subplot(232);plot(10*log10(abs(ChanEst).^2)-min(10*log10(abs(ChanEst).^2)));title('channel estimation');%繪製通道估計的幅度譜
+RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data/size(ChanEst,1),M/size(ChanEst,2));
+subplot(232);plot(10*log10(abs(reshape(ChanEst,[],1)).^2)-min(10*log10(abs(reshape(ChanEst,[],1)).^2)));title('channel estimation');%繪製通道估計的幅度譜
 subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;
 subplot(234);plot(RxDataSymbEq(:).*exp(-1i*pi/4),'.');axis([-1.5,1.5,-1.5,1.5]);title('scatter after equalization'); axis square;%*exp(-1i*pi/4) 的作用是進行相位調整
+subplot(235);plot([RxDataSymbEq;zeros(N-M_data,M)]*Wn.*exp(-1i*pi/4),'.');axis([-1.5,1.5,-1.5,1.5]);title('After WHT'); axis square;
 
 end

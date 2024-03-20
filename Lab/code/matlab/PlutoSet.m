@@ -36,7 +36,7 @@ end
     I = output{1};
     Q = output{2};
     Rx = I+1i*Q;
-    figure(1); clf;%clear figure
+    figure(2); clf;%clear figure
     set(gcf,'name','立鎂科技-RX實際I/Q接收狀態'); % EVAN for debug OK %get current figure
     subplot(121);
     plot(I);

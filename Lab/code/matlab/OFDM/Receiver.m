@@ -79,28 +79,6 @@ RxSignalExt(:,1)=RxSignal;
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
 
-            
-
-         %% OTFS channel generation%%%%
-         % 3GPP channel model
-         max_speed=500;  % km/hr
-        [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
-        
-         %% channel output%%%%% 
-        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
-
-        r=zeros(N*M,1);
-        noise = sqrt(sigma_2(iesn0)/2) * (randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
-        l_max=max(delay_taps);
-        for q=0:N*M-1
-            for l=0:l_max
-                if(q>=l)
-                    r(q+1)=r(q+1)+gs(l+1,q+1)*RxSignalRadioFrame(q-l+1);  %equation (24) in [R1]
-                end
-            end
-        end
-        r=r+noise;
-
          %% OTSM Reobtain Pilot%%%%
                 
          %Pilot side
@@ -117,15 +95,39 @@ RxSignalExt(:,1)=RxSignal;
         % Estimate carrier frequency offset
         [RxDataSymbEq,ChanEst] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_PilotSymb);
 
+        %EQ測試用
+                RxSymbEq=reshape([RxDataSymbEq;
+                                  zeros(N-M_data,M)],[],1);
+
+
+         %% OTFS channel generation%%%%
+         % 3GPP channel model
+         max_speed=500;  % km/hr
+        [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
+        
+         %% channel output%%%%% 
+        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+
+        r=zeros(N*M,1);
+        noise = sqrt(sigma_2(iesn0)/2) * (randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
+        l_max=max(delay_taps);
+        for q=0:N*M-1
+            for l=0:l_max
+                if(q>=l)
+                    r(q+1)=r(q+1)+gs(l+1,q+1)*RxSymbEq(q-l+1);  %equation (24) in [R1]
+                end
+            end
+        end
+        r=r+noise;
+
+         
+
         %% OTSM demodulation%%%%
-            %EQ測試用
-                RxSymbEq=[RxDataSymbEq;
-                          zeros(N-M_data,M)  ];
-                RxEq = RxSymbEq*Wn;
+
             %主要解調變
                 Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
-         subplot(235);plot(r,'*');title('r');      
+            
          
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
