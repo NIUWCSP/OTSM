@@ -124,7 +124,7 @@ end
 
 
 %% 結束
-figure(3)
+figure(4)
 semilogy(SNR_dB,avg_ber_MFGS,'-o','LineWidth',2,'MarkerSize',8)
 hold on
 semilogy(SNR_dB,avg_ber_1tap,'-x','LineWidth',2,'MarkerSize',8)

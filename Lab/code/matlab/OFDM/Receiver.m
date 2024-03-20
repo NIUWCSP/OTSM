@@ -61,7 +61,9 @@ RxSignalExt(:,1)=RxSignal;
         NumDataSymb = N*M;
         NumRadioSymb = NumSyncSymb + NumPilotSymb + NumCP + NumDataSymb;
         
-        figure(2);clf;
+        %%畫圖準備
+        figure(3);clf;
+        
         %StartIdx = SyncRxSignalImproved2(RxSignalExt,M_mod,N,M);
         StartIdx = SyncRxSignalImproved1(RxSignalExt, 1, NumFFT,M_mod,N,M);
 
