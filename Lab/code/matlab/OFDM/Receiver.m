@@ -31,7 +31,7 @@ N_bits_perfram = N_syms_perfram*M_bits;
 
 
 % Time and frequency resources
-car_fre = 2.4*10^9;% Carrier frequency
+car_fre = 2.4*10^9;% Carrier frequency 原先4*10^9
 delta_f = 15*10^3; % subcarrier spacing: 15 KHz
 T = 1/delta_f; %one time symbol duration in OTFS frame
 
@@ -94,8 +94,9 @@ RxSignalExt(:,1)=RxSignal;
                Y_OTSM_PilotSymb(i*4+1:i*4+4,2) = Y_OTSM_Pilot(i*8+5:i*8+8,1);
          end
 
+        
         % Estimate carrier frequency offset
-        [RxDataSymbEq,ChanEst] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_PilotSymb);
+        [RxDataSymbEq] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_PilotSymb);
 
         %EQ測試用
                 RxSymbEq=reshape([RxDataSymbEq;
@@ -133,7 +134,7 @@ RxSignalExt(:,1)=RxSignal;
          
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
-        [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r,ChanEst);
+        [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);
         
          %% GS SOR Iterative detection
         

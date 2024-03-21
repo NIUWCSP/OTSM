@@ -27,11 +27,9 @@ ip = '192.168.2.1';
     input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
     input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
 for i=0:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
-    fprintf('Transmitting Data Block %i ...\n',i);
     input{1} = real(txdata);
     input{2} = imag(txdata);
     output = stepImpl(s, input);%調用pluto的通道資料
-    fprintf('Data Block %i Received...\n',i);
 end
     I = output{1};
     Q = output{2};

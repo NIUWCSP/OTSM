@@ -1,6 +1,6 @@
 function [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r,ChanEst)
 
-ChanEstGrid = repmat(ChanEst,N/size(ChanEst,1),M/size(ChanEst,2));
+%ChanEstGrid = repmat(ChanEst,N/size(ChanEst,1),M/size(ChanEst,2));
 % Generate time-domain GS iteration matrices for low complexity iterative detection
 Gn_block_matrix=zeros(M,M,N);
 Tn_block_matrix=zeros(M,M,N);

@@ -63,10 +63,10 @@ tx_signal2=rcosflt(TxSignal,1,upsample, 'filter', flt1); %4240(TxSignal)*4(upsam
 figure(1);
 set(gcf,'name','Transmitter內的資料實際點數','Position', [20 400 500 500]);
 subplot(221);
-plot(TxDataBits,'*');title('Orignal Txdatabits');axis([-10,N_syms_perfram*M_bits+10,-0.5,1.5]);
+plot(TxDataBits,'.');title('Orignal Txdatabits');axis([-10,N_syms_perfram*M_bits+10,-0.5,1.5]);
 subplot(222);
 plot(TxData,'*');title('After Qammod Txdatabits');axis([-1.5,1.5,-1.5,1.5]);
 subplot(223);
 plot(Tx_tilda,'*');title('Then addPilot&WHT');
 subplot(224);
-plot(tx_signal2,'*');title('Final TxSignal');
+plot(tx_signal2,'.');title('Final TxSignal');

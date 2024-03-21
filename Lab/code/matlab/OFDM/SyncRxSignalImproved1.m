@@ -4,7 +4,7 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
 %% Definitions 同步找開頭結尾
-numShortPreambleSamples = 16     * overSampFactor;
+numShortPreambleSamples = 8     * overSampFactor;
 numLongPreambleSamples  = numFFT * overSampFactor;
 
 thresholdCoarse = 0.9;%改回原值
