@@ -1,4 +1,4 @@
-function TxRadioFrame=Tx_addPilotSync(Tx,PilotBits,~,N,M_mod)
+function TxRadioFrame=Tx_addPilotSync(Tx,PilotBits,N,M_mod)
 %陳昱升
 % M_mod: size of QAM constellation
 M_bits = log2(M_mod);
@@ -20,10 +20,10 @@ QamPilotBits=reshape(QamPilotBits,sqrt(size(QamPilotBits,2)),[]);%切成方形�
 %QamSyncBits=qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit');
 %QamSyncBits=reshape(QamSyncBits,sqrt(size(QamSyncBits,2)),[]);%切成方形矩陣
 
-%%再資料後面加上 空白+Pilot+空白
+%%再資料後面加上 Pilot+空白+Pilot
 TxRadioFrame=Tx;
-%TxRadioFrame(NumDataN+1:NumDataN+size(QamSyncBits,2),1:size(QamSyncBits,2))=QamSyncBits;
-TxRadioFrame(NumDataN+size(QamPilotBits,2)+1:NumDataN+size(QamPilotBits,2)*2,1:size(QamPilotBits,2))=QamPilotBits;
+TxRadioFrame(NumDataN+1:NumDataN+size(QamPilotBits,2),1:size(QamPilotBits,2))=QamPilotBits;
+TxRadioFrame(NumDataN+size(QamPilotBits,2)*2+1:NumDataN+size(QamPilotBits,2)*3,1:size(QamPilotBits,2))=QamPilotBits;
 
 %for idy=1:N/size(SPS,2)
 %TxRadioFrame(NumDataN+1:N,(idy-1)*size(SPS,2)+1:idy*size(SPS,2))=SPS;%在底下空白處加入SPS

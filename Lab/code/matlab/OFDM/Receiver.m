@@ -85,16 +85,28 @@ RxSignalExt(:,1)=RxSignal;
                 
          %Pilot side
          RxSignalGrid=reshape(RxSignalRadioFrame,N,M);
-         Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(size(GetPilotBits,2)/2)+1:M_data+8*2,1:sqrt(size(GetPilotBits,2)/2)),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
-
+         Y_OTSM_Pilot=zeros(N,2);
+         for i=1:sqrt(size(Y_OTSM_Pilot,1))
+         %Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+sqrt(size(GetPilotBits,2)/2)+1:M_data+8*2,1:sqrt(size(GetPilotBits,2)/2)),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+         Y_OTSM_Pilot((i-1)*8+1:(i-1)*8+8,1)=RxSignalGrid(M_data+1:M_data+sqrt(size(GetPilotBits,2)/2),i);
+         Y_OTSM_Pilot((i-1)*8+1:(i-1)*8+8,2)=RxSignalGrid(M_data+sqrt(size(GetPilotBits,2)/2)*2+1:M_data+sqrt(size(GetPilotBits,2)/2)*3,i);
+         end
          %%把pilot的8*8資料 拆成4*8、4*8
-         Y_OTSM_PilotSymb=zeros(size(Y_OTSM_Pilot,1)/2,2);
-         for i=0:sqrt(size(Y_OTSM_Pilot,1))-1
-               Y_OTSM_PilotSymb(i*4+1:i*4+4,1) = Y_OTSM_Pilot(i*8+1:i*8+4,1);
-               Y_OTSM_PilotSymb(i*4+1:i*4+4,2) = Y_OTSM_Pilot(i*8+5:i*8+8,1);
+         Y_OTSM_PilotTest=reshape(RxSignalGrid(M_data+1:M_data+8,1:sqrt(size(GetPilotBits,2)/2)),[],1);
+         Y_OTSM_PilotSymb=zeros(size(Y_OTSM_PilotTest,1)/2,2);
+         for i=0:sqrt(size(Y_OTSM_PilotTest,1))-1
+               Y_OTSM_PilotSymb(i*4+1:i*4+4,1) = Y_OTSM_PilotTest(i*8+1:i*8+4,1);
+               Y_OTSM_PilotSymb(i*4+1:i*4+4,2) = Y_OTSM_PilotTest(i*8+5:i*8+8,1);
          end
 
+            %% OTFS channel generation%%%%
+         % 3GPP channel model
+         max_speed=500;  % km/hr
+        [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
         
+         %% channel output%%%%% 
+        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+
         % Estimate carrier frequency offset
         [RxDataSymbEq] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_PilotSymb);
 
@@ -103,13 +115,7 @@ RxSignalExt(:,1)=RxSignal;
                                   zeros(N-M_data,M)],[],1);
 
 
-         %% OTFS channel generation%%%%
-         % 3GPP channel model
-         max_speed=500;  % km/hr
-        [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
-        
-         %% channel output%%%%% 
-        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+
 
         r=zeros(N*M,1);
         noise = sqrt(sigma_2(iesn0)/2) * (randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
