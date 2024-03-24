@@ -105,10 +105,10 @@ RxSignalExt(:,1)=RxSignal;
         [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
         
          %% channel output%%%%% 
-        [G,gs]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+        [G,gs,l_max]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
 
         % Estimate carrier frequency offset
-        [RxDataSymbEq] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_PilotSymb);
+        [RxDataSymbEq] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,l_max,gs,delay_taps);
 
         %EQ測試用
                 RxSymbEq=reshape([RxDataSymbEq;

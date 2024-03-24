@@ -1,4 +1,4 @@
-function [RxDataSymbEq] = channel_est(N,M,M_mod,NumFFT,RxSignalRadioFrame,Y_OTSM_Pilot)
+function [RxDataSymbEq] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,l_max,gs,delay_taps)
 
 %%基本參數設置
 % max delay spread in the channel
@@ -17,9 +17,30 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 XCorrPilot = Y_OTSM_Pilot(:,1)' * Y_OTSM_Pilot(:,2);%導頻符號的交叉相關
 EpsEst = 1/(2*pi) * atan(imag(XCorrPilot)/real(XCorrPilot));%頻率偏移的估計
 
+%測試用CFO
+RxSignalRadioGrid=reshape(RxSignalRadioFrame,N,M);
+y_mp1=zeros(size(Y_OTSM_Pilot,1),1); %64*1
+y_mp2=zeros(size(Y_OTSM_Pilot,1),1); %64*1
+
+  for l=0:l_max
+      for n=1:sqrt(size(Y_OTSM_Pilot,1)) %1~8
+          for mp1=M_data+1:M_data+sqrt(size(Y_OTSM_Pilot,1)) %41~48
+                    y_mp1((mp1-M_data)+(n-1)*8,1)=gs(l+1,mp1+l+n*M+1).* exp(1j*2*pi*EpsEst/M*(mp1+l+n*M+1))*RxSignalRadioGrid(mp1,n);
+          end
+          for mp2=M_data+sqrt(size(Y_OTSM_Pilot,1))+1:M_data+sqrt(size(Y_OTSM_Pilot,1))*2 %49~56
+                    y_mp2((mp2-M_data-sqrt(size(Y_OTSM_Pilot,1)))+(n-1)*8,1)=gs(l+1,mp2+l+n*M+1).* exp(1j*2*pi*EpsEst/M*(mp2+l+n*M+1))*RxSignalRadioGrid(mp2,n);
+          end
+      end
+  end %%equation (17) in [R3]
+XCorrmp = y_mp1(:,1) * (exp(1j*pi/2)*y_mp2(:,1)');
+tilda_CFO = -M/(2*pi*l_max*length(delay_taps))* atan(imag(XCorrmp)/real(XCorrmp)); %%equation (18) in [R3]
+
+
 % Estimate carrier freqnecy offset
-RxSigalRadioFrameCmpCFO = RxSignalRadioFrame .* ...
-    exp(-1j*2*pi*EpsEst/NumFFT * (0:length(RxSignalRadioFrame)-1)');%接收訊號進行CFO校正
+RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ;
+
+%RxSigalRadioFrameCmpCFO = RxSignalRadioFrame .* ...
+    %exp(-1j*2*pi*EpsEst/M * (0:length(RxSignalRadioFrame)-1)');%接收訊號進行CFO校正
 RxSignalRadioGridCFO = reshape(RxSigalRadioFrameCmpCFO,N,M);
 
 % Reobtain pilot data

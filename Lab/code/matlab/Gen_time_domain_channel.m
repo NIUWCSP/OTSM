@@ -1,4 +1,4 @@
-function [G,gs]=Gen_time_domain_channel(N,M,P,delay_taps,Doppler_taps,chan_coef)
+function [G,gs,l_max]=Gen_time_domain_channel(N,M,P,delay_taps,Doppler_taps,chan_coef)
 z=exp(1i*2*pi/N/M);
 l_max=max(delay_taps);
 gs=zeros(l_max+1,N*M);      
