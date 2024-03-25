@@ -35,6 +35,13 @@ PilotBits = GetPilotBits();%Preamble的data
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data
 SyncSymb_tilda = reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
+%對抗ISI
+SyncSymb_tilda_ISI = [ ...
+    zeros(10,1);%10個0
+    SyncSymb_tilda(1:end/2, :);
+    zeros(1,1);%1個0
+    SyncSymb_tilda(end/2+1:end, :);
+    zeros(9,1)];%9個0
 
 % Generate data symbols
 global TxDataBits;

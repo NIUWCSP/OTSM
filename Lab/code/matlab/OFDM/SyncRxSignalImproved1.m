@@ -3,10 +3,10 @@ function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor,M_mod,N,M)
 
 
 %% Definitions 同步找開頭結尾
-numShortPreambleSamples = 12     * overSampFactor;
+numShortPreambleSamples = 16     * overSampFactor;
 numLongPreambleSamples  = 128 * overSampFactor;
 
-thresholdCoarse = 0.92;%改回原值
+thresholdCoarse = 0.9;%改回原值
 thresholdFine   = 0.6;%改回原值
 
 frameLen = length(rxFrame);

@@ -50,7 +50,7 @@ RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ; %%equat
 %RxSignalRadioGridCFO = reshape(RxSigalRadioFrameCmpCFO,N,M);
 
 % Reobtain pilot data
-PilotOtsmSymb = (RxSigalRadioFrameCmpCFO(M_data+1:M_data+sqrt(PilotSymb)*1,1:sqrt(PilotSymb)));%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
+PilotOtsmSymb = RxSigalRadioFrameCmpCFO(M_data+1:M_data+sqrt(PilotSymb)*1,1:sqrt(PilotSymb));%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
 
 % Data OFDM symbol
 DataOtsmSymb = RxSigalRadioFrameCmpCFO(1:M_data,1:M);
@@ -59,13 +59,11 @@ DataOtsmSymb = RxSigalRadioFrameCmpCFO(1:M_data,1:M);
 % Channel estimation and equalization
 PilotBits = GetPilotBits();
 QamPilotSymb = qammod(reshape(PilotBits,M_bits,[]),M_mod,'gray','InputType','bit');
-QamPilotSymbGrid= reshape(QamPilotSymb,sqrt(size(QamPilotSymb,2)),[]);
+QamPilotSymbGrid= reshape(QamPilotSymb,sqrt(PilotSymb),[]);
 WnPilotSymb=zeros(N,M);
-%WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2))) = QamPilotSymbGrid;
-WnPilotSymb(NumDataN+1:NumDataN+sqrt(size(QamPilotSymb,2)),1:sqrt(size(QamPilotSymb,2))) = QamPilotSymbGrid;
+WnPilotSymb(M_data+1:M_data+sqrt(PilotSymb),1:sqrt(PilotSymb)) = QamPilotSymbGrid;
 WnPilotSymb=WnPilotSymb*Wn;
-%Tx_PilotSymb=WnPilotSymb(NumDataN+sqrt(size(QamPilotSymb,2))+1:NumDataN+sqrt(size(QamPilotSymb,2))*2,1:sqrt(size(QamPilotSymb,2)));
-Tx_PilotSymb=WnPilotSymb(NumDataN+1:NumDataN+sqrt(size(QamPilotSymb,2)),1:sqrt(size(QamPilotSymb,2)));
+Tx_PilotSymb=WnPilotSymb(M_data+1:M_data+sqrt(PilotSymb),1:sqrt(PilotSymb));
 
 
 ChanEst = PilotOtsmSymb ./ Tx_PilotSymb;%通道估计
