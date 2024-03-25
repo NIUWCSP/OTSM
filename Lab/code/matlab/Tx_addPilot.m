@@ -1,4 +1,4 @@
-function TxRadioFrame=Tx_addPilotSync(Tx,PilotBits,N,M_mod)
+function TxRadioFrame=Tx_addPilot(Tx,PilotBits,N,M_mod)
 %陳昱升
 % M_mod: size of QAM constellation
 M_bits = log2(M_mod);

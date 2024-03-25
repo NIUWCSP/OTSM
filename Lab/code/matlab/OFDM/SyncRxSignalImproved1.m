@@ -1,13 +1,12 @@
-function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor, numFFT,M_mod,N,M)
+function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor,M_mod,N,M)
 %% Normalized WHT matrix
-Wn=fwht(eye(N));  % Generate the WHT matrix
-Wn=Wn./norm(Wn);  % normalize the WHT matrix
+
 
 %% Definitions 同步找開頭結尾
-numShortPreambleSamples = 8     * overSampFactor;
-numLongPreambleSamples  = numFFT * overSampFactor;
+numShortPreambleSamples = 12     * overSampFactor;
+numLongPreambleSamples  = 128 * overSampFactor;
 
-thresholdCoarse = 0.9;%改回原值
+thresholdCoarse = 0.92;%改回原值
 thresholdFine   = 0.6;%改回原值
 
 frameLen = length(rxFrame);
@@ -20,7 +19,7 @@ M_bits = log2(M_mod);
 
 %%調變同步資料
 SyncBits = GetSyncBits();%確保正確解讀接收到的數據
-SyncSymb_tilda=QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn);
+SyncSymb_tilda=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
 
 syncSig = SyncSymb_tilda;
 %syncSig = ifft(SyncSymb_tilda) * sqrt(length(SyncSymb_tilda));

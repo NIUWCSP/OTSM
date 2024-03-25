@@ -31,18 +31,17 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 %% Transmitter
 % Generate pilot symbols
 PilotBits = GetPilotBits();%Preamble的data
-PilotSymb_tilda = QamAndTilda(PilotBits,M_mod,M_bits,N,M,Wn);
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();%Preamble的data
-SyncSymb_tilda = QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn);
+SyncSymb_tilda = reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
 
 % Generate data symbols
 global TxDataBits;
 TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
 TxData=qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*2560
 Tx = Generate_2D_data_grid(N,M,TxData,data_grid);
-Tx_Symb=Tx_addPilotSync(Tx,PilotBits,N,M_mod); 
+Tx_Symb=Tx_addPilot(Tx,PilotBits,N,M_mod); 
 
 %% OTSM modulation%%%%
 Tx_tilda=Tx_Symb*Wn;              %equation (6) in [R1]   %Tx=X

@@ -48,7 +48,7 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
 % Setting parameters
-NumFFT = 64; %V3  FFT轉換的點數
+
 NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 %%  Receiver
@@ -65,7 +65,7 @@ RxSignalExt(:,1)=RxSignal;
         figure(3);clf;
         
         %StartIdx = SyncRxSignalImproved2(RxSignalExt,M_mod,N,M);
-        StartIdx = SyncRxSignalImproved1(RxSignalExt, 1, NumFFT,M_mod,N,M);
+        StartIdx = SyncRxSignalImproved1(RxSignalExt, 1 ,M_mod,N,M);
 
         %%JF加入重新賦值=1避免StartIdx == -1時直接中斷程式：
         global NoFoundDataTimes;
@@ -92,12 +92,6 @@ RxSignalExt(:,1)=RxSignal;
          Y_OTSM_Pilot((i-1)*8+1:(i-1)*8+8,2)=RxSignalGrid(M_data+sqrt(size(GetPilotBits,2)/2)*2+1:M_data+sqrt(size(GetPilotBits,2)/2)*3,i);
          end
          %%把pilot的8*8資料 拆成4*8、4*8
-         Y_OTSM_PilotTest=reshape(RxSignalGrid(M_data+1:M_data+8,1:sqrt(size(GetPilotBits,2)/2)),[],1);
-         Y_OTSM_PilotSymb=zeros(size(Y_OTSM_PilotTest,1)/2,2);
-         for i=0:sqrt(size(Y_OTSM_PilotTest,1))-1
-               Y_OTSM_PilotSymb(i*4+1:i*4+4,1) = Y_OTSM_PilotTest(i*8+1:i*8+4,1);
-               Y_OTSM_PilotSymb(i*4+1:i*4+4,2) = Y_OTSM_PilotTest(i*8+5:i*8+8,1);
-         end
 
             %% OTFS channel generation%%%%
          % 3GPP channel model
