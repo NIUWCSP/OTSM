@@ -1,10 +1,10 @@
-function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor,M_mod,N,M)
+function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor,M_mod,N,M,Wn)
 %% Normalized WHT matrix
 
 
 %% Definitions 同步找開頭結尾
 numShortPreambleSamples = 16     * overSampFactor;
-numLongPreambleSamples  = 128 * overSampFactor;
+numLongPreambleSamples  = M*2 * overSampFactor;
 
 thresholdCoarse = 0.9;%改回原值
 thresholdFine   = 0.6;%改回原值
@@ -18,10 +18,11 @@ M_bits = log2(M_mod);
 %% Construct the syncSig to be used for fine tuning
 
 %%調變同步資料
-SyncBits = GetSyncBits();%確保正確解讀接收到的數據
-SyncSymb_tilda=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
 
-syncSig = SyncSymb_tilda;
+SyncBits = GetSyncBits();%確保正確解讀接收到的數據
+QamSync_tilda = QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn);
+
+syncSig = QamSync_tilda;
 %syncSig = ifft(SyncSymb_tilda) * sqrt(length(SyncSymb_tilda));
 
 %% Cross correlate different segments of the Rx signal, and the sync signal

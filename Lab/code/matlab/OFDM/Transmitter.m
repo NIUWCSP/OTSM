@@ -33,15 +33,8 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 PilotBits = GetPilotBits();%Preamble的data
 
 % Generate synchronization symbols
-SyncBits = GetSyncBits();%Preamble的data
-SyncSymb_tilda = reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
-%對抗ISI
-SyncSymb_tilda_ISI = [ ...
-    zeros(10,1);%10個0
-    SyncSymb_tilda(1:end/2, :);
-    zeros(1,1);%1個0
-    SyncSymb_tilda(end/2+1:end, :);
-    zeros(9,1)];%9個0
+SyncBits = GetSyncBits();
+QamSync_tilda = QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn); %128*1
 
 % Generate data symbols
 global TxDataBits;
@@ -55,9 +48,9 @@ Tx_tilda=Tx_Symb*Wn;              %equation (6) in [R1]   %Tx=X
 %TxDataOtsmSymb=OtsmSignalModulation(Tx_tilda, NumFFT, NumCP);
 tx_Data_signal=reshape(Tx_tilda,[],1);  %equation (7) in [R1]
 TxSignal = [ ...
-    SyncSymb_tilda(1:NumSyncPreamble);
-    SyncSymb_tilda(1:NumSyncPreamble);
-    SyncSymb_tilda;
+    QamSync_tilda(1:NumSyncPreamble);
+    QamSync_tilda(1:NumSyncPreamble);
+    QamSync_tilda;
     tx_Data_signal(N*M-NumCP+1:N*M,1);
     tx_Data_signal];
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper 

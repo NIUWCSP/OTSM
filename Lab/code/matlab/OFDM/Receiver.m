@@ -56,7 +56,7 @@ RxSignalExt(:,1)=RxSignal;
 %PilotNumDataSubcarrier =64;
 %DataNumDataSubcarrier =64;
 
-        NumSyncSymb =  NumSyncPreamble*2+size(GetSyncBits,2)/2;%
+        NumSyncSymb =  NumSyncPreamble*2+128;%
         NumPilotSymb = 0;%PilotBits為128個Bits QAM後會除2
         NumDataSymb = N*M;
         NumRadioSymb = NumSyncSymb + NumPilotSymb + NumCP + NumDataSymb;
@@ -65,7 +65,7 @@ RxSignalExt(:,1)=RxSignal;
         figure(3);clf;
         
         %StartIdx = SyncRxSignalImproved2(RxSignalExt,M_mod,N,M);
-        StartIdx = SyncRxSignalImproved1(RxSignalExt, 1 ,M_mod,N,M);
+        StartIdx = SyncRxSignalImproved1(RxSignalExt, 1 ,M_mod,N,M,Wn);
 
         %%JF加入重新賦值=1避免StartIdx == -1時直接中斷程式：
         global NoFoundDataTimes;
