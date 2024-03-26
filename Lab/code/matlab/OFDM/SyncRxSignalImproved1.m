@@ -1,6 +1,4 @@
 function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor,M_mod,N,M,Wn)
-%% Normalized WHT matrix
-
 
 %% Definitions 同步找開頭結尾
 numShortPreambleSamples = 16     * overSampFactor;

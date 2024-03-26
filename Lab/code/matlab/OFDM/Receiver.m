@@ -56,10 +56,9 @@ RxSignalExt(:,1)=RxSignal;
 %PilotNumDataSubcarrier =64;
 %DataNumDataSubcarrier =64;
 
-        NumSyncSymb =  NumSyncPreamble*2+128;%
-        NumPilotSymb = 0;%PilotBits為128個Bits QAM後會除2
+        NumSyncSymb =  NumSyncPreamble*2+128;%128是調變後的Sync值
         NumDataSymb = N*M;
-        NumRadioSymb = NumSyncSymb + NumPilotSymb + NumCP + NumDataSymb;
+        NumRadioSymb = NumSyncSymb + NumCP + NumDataSymb;
         
         %%畫圖準備
         figure(3);clf;
@@ -76,7 +75,7 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb + NumPilotSymb + NumCP:StartIdx+NumRadioSymb-1);
+        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb  + NumCP:StartIdx+NumRadioSymb-1);
 
         %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
         %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);

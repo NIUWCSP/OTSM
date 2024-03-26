@@ -6,7 +6,6 @@ delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
 % data positions of OTFS delay-Doppler domain data symbols  in the 2-D grid
 M_data = M-delay_spread;%64-24=40
 M_bits = log2(M_mod);
-NumDataN=N-delay_spread;
 PilotSymb=size(GetPilotBits,2)/2;%PilotBits為128個Bits QAM後會除2
 
 %% Normalized WHT matrix
@@ -44,6 +43,7 @@ end
 
 % Estimate carrier freqnecy offset
 RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ; %%equation (19) in [R3]
+%RxSigalCFO=reshape(RxSigalRadioFrameCmpCFO,[],1);
 
 %RxSigalRadioFrameCmpCFO = RxSignalRadioFrame .* ...
     %exp(-1j*2*pi*EpsEst/M * (0:length(RxSignalRadioFrame)-1)');%接收訊號進行CFO校正
