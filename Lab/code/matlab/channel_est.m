@@ -82,17 +82,20 @@ RxDataSymbEq = RxSigalRadioFrameCmpCFO./gs_Grid;
 
 %%偵錯
 global NoFoundDataTimes;
-if (isnan(atan(imag(XCorrmp)/real(XCorrmp))))
+if (isnan(ChanEst(:)))
     NoFoundDataTimes = NoFoundDataTimes+1;
     RxDataSymbEq(1:N,1:M)=RxSignalRadioGrid(1:N,1:M);
+    RxSigalRadioFrameCmpCFO(1:N,1:M)=RxSignalRadioGrid(1:N,1:M);
     return;
 end
 
 % RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data/size(ChanEst,1),M/size(ChanEst,2));
 subplot(232);plot(10*log10(abs(reshape(ChanEst,[],1)).^2)-min(10*log10(abs(reshape(ChanEst,[],1)).^2)));title('channel estimation');%繪製通道估計的幅度譜
-subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;
-subplot(234);plot(RxDataSymbEq(:),'.');axis([-1.5,1.5,-1.5,1.5]);title('scatter after equalization'); axis square;%*exp(-1i*pi/4) 的作用是進行相位調整
-subplot(235);plot([RxDataSymbEq;zeros(N-M_data,M)]*Wn,'.');axis([-1.5,1.5,-1.5,1.5]);title('After WHT'); axis square;
+subplot(233);plot(RxSignalRadioFrame(:),'.');axis equal;title('scatter before CFO');axis square;
+subplot(234);plot(RxSigalRadioFrameCmpCFO(:),'.');axis equal;title('scatter after CFO'); axis square;
+% subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;
+% subplot(234);plot(RxDataSymbEq(:),'.');axis([-1.5,1.5,-1.5,1.5]);title('scatter after equalization'); axis square;
+% subplot(235);plot([RxDataSymbEq;zeros(N-M_data,M)]*Wn,'.');axis([-1.5,1.5,-1.5,1.5]);title('After WHT'); axis square;
 text(2,0.6,['NoFoundData: ',num2str(NoFoundDataTimes),' 次']);
 
 end

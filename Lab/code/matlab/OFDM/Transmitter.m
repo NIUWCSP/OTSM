@@ -1,15 +1,10 @@
-function tx_signal2 = Transmitter(upsample)
+function tx_signal2 = Transmitter(upsample,N,M,M_mod)
 %NumFFT = 64;%V3 FFT轉換的點數
 NumSyncPreamble = 32;%V3 同步的前綴，Preamble：防干擾+同步+通道估測(已知的頻域資料)
 NumCP = 16;%V3 CP：循環前綴，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 
 %% OTFS parameters%%%%%%%%%%
-% N: number of symbols in time
-N = 64;
-% M: number of subcarriers in frequency
-M = 64;
-% M_mod: size of QAM constellation
-M_mod = 4;
+
 M_bits = log2(M_mod);
 
 %% delay-Doppler grid symbol placement
@@ -21,8 +16,6 @@ data_grid=zeros(M,N);
 data_grid(1:M_data,1:N)=1;
 % number of symbols per frame
 N_syms_perfram = sum(sum(data_grid));
-% number of bits per frame
-N_bits_perfram = N_syms_perfram*M_bits;
 
 %% Normalized WHT matrix
 Wn=fwht(eye(N));  % Generate the WHT matrix

@@ -6,7 +6,6 @@ function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_in
 
 %% OTFS parameters%%%%%%%%%%
 
-M_bits = log2(M_mod);
 % average energy per data symbol
 % eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 
@@ -18,11 +17,6 @@ delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
 M_data = M-delay_spread;%64-24=40
 data_grid=zeros(M,N);
 data_grid(1:M_data,1:N)=1;
-% number of symbols per frame
-N_syms_perfram = sum(sum(data_grid));%64*40=2560
-% number of bits per frame
-N_bits_perfram = N_syms_perfram*M_bits;
-
 
 
 % Time and frequency resources
@@ -43,8 +37,6 @@ NumSyncPreamble = 32; %V3 同步的前綴，Preamble：防干擾+同步+通道�
 NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免ISI(多路徑干擾)(未知的時域訊號)
 %%  Receiver
 RxSignalExt(:,1)=RxSignal;
-%PilotNumDataSubcarrier =64;
-%DataNumDataSubcarrier =64;
 
         NumSyncSymb =  NumSyncPreamble*2+128;%128是調變後的Sync值
         NumDataSymb = N*M;
@@ -66,9 +58,6 @@ RxSignalExt(:,1)=RxSignal;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
         RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb  + NumCP:StartIdx+NumRadioSymb-1);
-
-        %RxSignalDataFrame=OtsmSignalDemodulation(RxSignalRadioFrame, NumFFT, 0, DataNumDataSubcarrier,M_mod);
-        %RxSignalDataFrame=reshape(RxSignalDataFrame,[],1);
 
          %% OTSM Reobtain Pilot%%%%
                 
