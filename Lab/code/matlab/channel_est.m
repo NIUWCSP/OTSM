@@ -1,4 +1,4 @@
-function [RxDataSymbEq,G] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,l_max)
+function [RxDataSymbEq,RxSigalRadioFrameCmpCFO,G] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,l_max)
 
 %%基本參數設置
 % max delay spread in the channel
@@ -21,18 +21,18 @@ Wn=Wn./norm(Wn);  % normalize the WHT matrix
 XCorrPilot = Y_OTSM_Pilot(:,1)' * Y_OTSM_Pilot(:,2);%導頻符號的交叉相關
 EpsEst = 1/(2*pi) * atan(imag(XCorrPilot)/real(XCorrPilot));%頻率偏移的估計
 
-%測試用CFO
+ %測試用CFO
 y_mp1=zeros(size(Y_OTSM_Pilot,1),l_max+1); %64*1
 y_mp2=zeros(size(Y_OTSM_Pilot,1),l_max+1); %64*1
 N_p2=sqrt(size(Y_OTSM_Pilot,1));
 
   for l=0:l_max
       for n=1:DelayPilotSymb %1~8
-          for mp1=M_data+1:M_data+DelayPilotSymb %41~48 
-                    y_mp1((mp1-M_data)+(n-1)*8,l+1)= gs(l+1,mp1+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp1+l+n*M+1))*RxSignalRadioGrid(mp1,n);
+          for mp1=M_data+1:M_data+DelayPilotSymb %41~48 刪gs(l+1,mp1+l+n*M+1).*
+                    y_mp1((mp1-M_data)+(n-1)*8,l+1)= exp(1j*2*pi*EpsEst/M*(mp1+l+n*M+1))*RxSignalRadioGrid(mp1,n);
           end
-          for mp2=M_data+N_p2+1:M_data+DelayPilotSymb*2 %49~56 
-                    y_mp2((mp2-M_data-N_p2)+(n-1)*8,l+1)= exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp2+l+n*M+1))*RxSignalRadioGrid(mp2,n);
+          for mp2=M_data+N_p2+1:M_data+DelayPilotSymb*2 %49~56 刪exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*
+                    y_mp2((mp2-M_data-N_p2)+(n-1)*8,l+1)= exp(1j*2*pi*EpsEst/M*(mp2+l+n*M+1))*RxSignalRadioGrid(mp2,n);
           end
       end
   end %%equation (17) in [R3]
@@ -44,7 +44,10 @@ N_p2=sqrt(size(Y_OTSM_Pilot,1));
 
 
 % Estimate carrier freqnecy offset
-RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ; %%equation (19) in [R3]
+ RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ; %%equation (19) in [R3]
+% RxSigalRadioFrameCmpCFO = RxSignalRadioFrame .* ...
+%     exp(-1j*2*pi*EpsEst/M * (0:length(RxSignalRadioFrame)-1)');%接收訊號進行CFO校正
+% RxSigalRadioFrameCmpCFO=reshape(RxSigalRadioFrameCmpCFO,N,M);
 PilotOtsmSymb = RxSigalRadioFrameCmpCFO(M_data+1:M_data+DelayPilotSymb*1,1:DelayPilotSymb);%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
 
 
@@ -75,7 +78,7 @@ for q=0:N*M-1
     end
 end
 
-RxDataSymbEq = RxSigalRadioFrameCmpCFO./repmat(ChanEst, N/size(ChanEst,1),M/size(ChanEst,2));
+RxDataSymbEq = RxSigalRadioFrameCmpCFO./gs_Grid;
 
 %%偵錯
 global NoFoundDataTimes;

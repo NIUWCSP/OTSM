@@ -110,12 +110,12 @@ RxSignalExt(:,1)=RxSignal;
 %          %%% Estimating the practical channel model 
 %          %%% outputs [G,gs,l_max]
  % Estimate carrier frequency offset
-        [RxDataSymbEq,G] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,0);
+        [RxDataSymbEq,RxSigalRadioFrameCmpCFO,G] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,0);
 
         %EQ測試用
                 %RxSymbEq=reshape([RxDataSymbEq;
                                   %zeros(N-M_data,M)],[],1);
-        r = reshape(RxDataSymbEq,[],1);
+        r = reshape(RxSigalRadioFrameCmpCFO,[],1);
         %% OTSM demodulation%%%%
 
             %主要解調變
