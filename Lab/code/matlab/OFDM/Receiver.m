@@ -1,19 +1,14 @@
-function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal)
+function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal, sigma, N, M, M_mod)
 
 
 %%廣域變數宣告
-global iesn0
+% global iesn0
 
 %% OTFS parameters%%%%%%%%%%
-% N: number of symbols in time
-N = 64;
-% M: number of subcarriers in frequency
-M = 64;
-% M_mod: size of QAM constellation
-M_mod = 4;
+
 M_bits = log2(M_mod);
 % average energy per data symbol
-eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
+% eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 
 
 %% delay-Doppler grid symbol placement
@@ -24,22 +19,17 @@ M_data = M-delay_spread;%64-24=40
 data_grid=zeros(M,N);
 data_grid(1:M_data,1:N)=1;
 % number of symbols per frame
-N_syms_perfram = sum(sum(data_grid));%64*40=2,560
+N_syms_perfram = sum(sum(data_grid));%64*40=2560
 % number of bits per frame
 N_bits_perfram = N_syms_perfram*M_bits;
 
 
 
 % Time and frequency resources
-car_fre = 2.4*10^9;% Carrier frequency 原先4*10^9
-delta_f = 15*10^3; % subcarrier spacing: 15 KHz
-T = 1/delta_f; %one time symbol duration in OTFS frame
+% car_fre = 2.4*10^9;% Carrier frequency 原先4*10^9
+% delta_f = 15*10^3; % subcarrier spacing: 15 KHz
+% T = 1/delta_f; %one time symbol duration in OTFS frame
 
-% SNR and variance of the noise
-% SNR = P/\sigma^2; P: avg. power of albhabet transmitted
-SNR_dB = 10:2.5:20;
-SNR = 10.^(SNR_dB/10);
-sigma_2 = (abs(eng_sqrt)^2)./SNR;
 
 
 
@@ -92,38 +82,40 @@ RxSignalExt(:,1)=RxSignal;
          end
          %%把pilot的8*8資料 拆成4*8、4*8
 
-            %% OTFS channel generation%%%%
-         % 3GPP channel model
-         max_speed=500;  % km/hr
-        [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
-        
-         %% channel output%%%%% 
-        [G,gs,l_max]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
-
-        % Estimate carrier frequency offset
-        [RxDataSymbEq] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,l_max,gs,delay_taps);
+%             %% OTFS channel generation%%%%  for math model
+%          % 3GPP channel model
+%          max_speed=500;  % km/hr
+%         [chan_coef,delay_taps,Doppler_taps,taps]=Generate_delay_Doppler_channel_parameters(N,M,car_fre,delta_f,T,max_speed);
+%         
+%          %% channel output%%%%% 
+%         [G,gs,l_max]=Gen_time_domain_channel(N,M,taps,delay_taps,Doppler_taps,chan_coef);
+% 
+%        
+% 
+% 
+% 
+% 
+%         r=zeros(N*M,1);
+%         noise = sigma * (randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
+%         l_max=max(delay_taps);
+%         for q=0:N*M-1
+%             for l=0:l_max
+%                 if(q>=l)
+%                     r(q+1)=r(q+1)+gs(l+1,q+1)*RxSymbEq(q-l+1);  %equation (24) in [R1]
+%                 end
+%             end
+%         end
+%         r=r+noise;
+% 
+%          %%% Estimating the practical channel model 
+%          %%% outputs [G,gs,l_max]
+ % Estimate carrier frequency offset
+        [RxDataSymbEq,G] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,0);
 
         %EQ測試用
-                RxSymbEq=reshape([RxDataSymbEq;
-                                  zeros(N-M_data,M)],[],1);
-
-
-
-
-        r=zeros(N*M,1);
-        noise = sqrt(sigma_2(iesn0)/2) * (randn(size(RxSignalRadioFrame)) + 1i*randn(size(RxSignalRadioFrame)));
-        l_max=max(delay_taps);
-        for q=0:N*M-1
-            for l=0:l_max
-                if(q>=l)
-                    r(q+1)=r(q+1)+gs(l+1,q+1)*RxSymbEq(q-l+1);  %equation (24) in [R1]
-                end
-            end
-        end
-        r=r+noise;
-
-         
-
+                %RxSymbEq=reshape([RxDataSymbEq;
+                                  %zeros(N-M_data,M)],[],1);
+        r = reshape(RxDataSymbEq,[],1);
         %% OTSM demodulation%%%%
 
             %主要解調變
@@ -143,8 +135,8 @@ RxSignalExt(:,1)=RxSignal;
             omega=0.25;
         end
         decision=1; %1-hard decision, 0-soft decision
-        [est_info_bits_MFGS,det_iters_MFGS,~] = Matched_Filter_GS_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Y,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
-        [est_info_bits_1tap,~] = TF_single_tap_equalizer(N,M,M_mod,sigma_2(iesn0),data_grid,Y,H_t_f,Wn);
-        [est_info_bits_LMMSE,~] = Block_LMMSE_detector(N,M,M_mod,sigma_2(iesn0),data_grid,Gn_block_matrix,r,Wn);
+        [est_info_bits_MFGS,det_iters_MFGS,~] = Matched_Filter_GS_detector(N,M,M_mod,sigma,data_grid,Y,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
+        [est_info_bits_1tap,~] = TF_single_tap_equalizer(N,M,M_mod,sigma,data_grid,Y,H_t_f,Wn);
+        [est_info_bits_LMMSE,~] = Block_LMMSE_detector(N,M,M_mod,sigma,data_grid,Gn_block_matrix,r,Wn);
         RxDataBits=0;
        

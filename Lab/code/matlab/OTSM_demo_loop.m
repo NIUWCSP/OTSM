@@ -65,9 +65,10 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
 
 %% Initializing simulation error count variables
 N_fram = 10;
-global iesn0
+% global iesn0
 global ifram
 for iesn0 = 1:length(SNR_dB)
+    sigma = sqrt(sigma_2(iesn0));
     for ifram = 1:N_fram 
         current_frame_number=zeros(1,iesn0);
         current_frame_number(iesn0)=ifram;
@@ -84,7 +85,7 @@ for iesn0 = 1:length(SNR_dB)
             %% PLOT RX
             R6x = Rx(:,1);
             global RxDataSymbEq;
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end));
+            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod);
         
     %% errors count%%%%%
     global TxDataBits;
