@@ -14,7 +14,38 @@ Wn=fwht(eye(N));  % Generate the WHT matrix
 Wn=Wn./norm(Wn);  % normalize the WHT matrix
 
 
-               
+%%調變原Pilot
+PilotBits = GetPilotBits();
+QamPilotSymb = qammod(reshape(PilotBits,M_bits,[]),M_mod,'gray','InputType','bit');
+QamPilotSymbGrid= reshape(QamPilotSymb,DelayPilotSymb,[]);
+WnPilotSymb=zeros(N,M);
+WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb) = QamPilotSymbGrid;
+WnPilotSymb(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb) = QamPilotSymbGrid;%有2個Pilot所以放2次
+WnPilotSymb=WnPilotSymb*Wn;
+Tx_PilotSymb=[WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
+              WnPilotSymb(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb)];
+
+ % Channel estimation and equalization
+PilotOtsmSymb = [RxSignalRadioGrid(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
+                 RxSignalRadioGrid(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb)];
+ChanEst = PilotOtsmSymb ./ Tx_PilotSymb;%通道估计
+
+%%試求gs、G
+G=zeros(N*M,N*M);
+gs_Grid=zeros(N,M,l_max+1);
+gs=zeros(l_max+1,N*M);
+for l=0:l_max
+gs_Grid(:,:,l+1)=repmat(ChanEst, N/size(ChanEst,1),M/size(ChanEst,2));
+gs(l+1,:)= reshape(gs_Grid(:,:,l+1),1,[]);
+end
+
+for q=0:N*M-1
+    for l=0:l_max
+        if(q>=l)
+            G(q+1,q+1-l)=gs(l+1,q+1);
+        end
+    end
+end              
 %% Gen_time_domain_channel
 
 % Estimate carrier frequency offset
@@ -24,65 +55,34 @@ EpsEst = 1/(2*pi) * atan(imag(XCorrPilot)/real(XCorrPilot));%頻率偏移的估�
  %測試用CFO
 y_mp1=zeros(size(Y_OTSM_Pilot,1),l_max+1); %64*1
 y_mp2=zeros(size(Y_OTSM_Pilot,1),l_max+1); %64*1
-N_p2=sqrt(size(Y_OTSM_Pilot,1));
+N_p2=sqrt(size(Y_OTSM_Pilot,1))*2;
 
   for l=0:l_max
       for n=1:DelayPilotSymb %1~8
           for mp1=M_data+1:M_data+DelayPilotSymb %41~48 刪gs(l+1,mp1+l+n*M+1).*
-                    y_mp1((mp1-M_data)+(n-1)*8,l+1)= exp(1j*2*pi*EpsEst/M*(mp1+l+n*M+1))*RxSignalRadioGrid(mp1,n);
+                    y_mp1((mp1-M_data)+(n-1)*8,l+1)= gs(l+1,mp1+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp1+l+n*M+1))*RxSignalRadioGrid(mp1,n);
           end
-          for mp2=M_data+N_p2+1:M_data+DelayPilotSymb*2 %49~56 刪exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*
-                    y_mp2((mp2-M_data-N_p2)+(n-1)*8,l+1)= exp(1j*2*pi*EpsEst/M*(mp2+l+n*M+1))*RxSignalRadioGrid(mp2,n);
+          for mp2=M_data+N_p2+1:M_data+N_p2+DelayPilotSymb %57~64 刪exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*
+                    y_mp2((mp2-M_data-N_p2)+(n-1)*8,l+1)= exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp2+l+n*M+1))*RxSignalRadioGrid(mp2,n);
           end
       end
   end %%equation (17) in [R3]
     tilda_CFO=0; %初始化
   for l=0:l_max %把tilda_CFO的l_max*length(delay_taps)→*1
     XCorrmp=y_mp1(:,l+1) * (exp(1j*pi/2)*y_mp2(:,l+1)');
-    tilda_CFO = tilda_CFO+(-M/(2*pi*1)* atan(imag(XCorrmp(:,l+1))/real(XCorrmp(:,l+1)))); %%equation (18) in [R3]
+    tilda_CFO = tilda_CFO+(-M/(2*pi*1)* atan(imag(XCorrmp)/real(XCorrmp))); %%equation (18) in [R3]
   end
 
 
 % Estimate carrier freqnecy offset
  RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ; %%equation (19) in [R3]
-% RxSigalRadioFrameCmpCFO = RxSignalRadioFrame .* ...
-%     exp(-1j*2*pi*EpsEst/M * (0:length(RxSignalRadioFrame)-1)');%接收訊號進行CFO校正
-% RxSigalRadioFrameCmpCFO=reshape(RxSigalRadioFrameCmpCFO,N,M);
-PilotOtsmSymb = RxSigalRadioFrameCmpCFO(M_data+1:M_data+DelayPilotSymb*1,1:DelayPilotSymb);%將所選的一段導頻資料重新組織成一個矩陣，其中每列有兩個元素
 
 
-% Data OFDM symbol
-DataOtsmSymb = RxSigalRadioFrameCmpCFO(1:M_data,1:M);
-
-% Channel estimation and equalization
-PilotBits = GetPilotBits();
-QamPilotSymb = qammod(reshape(PilotBits,M_bits,[]),M_mod,'gray','InputType','bit');
-QamPilotSymbGrid= reshape(QamPilotSymb,DelayPilotSymb,[]);
-WnPilotSymb=zeros(N,M);
-WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb) = QamPilotSymbGrid;
-WnPilotSymb=WnPilotSymb*Wn;
-Tx_PilotSymb=WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
-
-ChanEst = PilotOtsmSymb ./ Tx_PilotSymb;%通道估计
-
-%%試求gs、G
-G=zeros(N*M,N*M);
-gs_Grid=repmat(ChanEst, N/size(ChanEst,1),M/size(ChanEst,2));
-gs=reshape(gs_Grid,l_max+1,[]);
-
-for q=0:N*M-1
-    for l=0:l_max
-        if(q>=l)
-            G(q+1,q+1-l)=gs(l+1,q+1);
-        end
-    end
-end
-
-RxDataSymbEq = RxSigalRadioFrameCmpCFO./gs_Grid;
+RxDataSymbEq = RxSigalRadioFrameCmpCFO./repmat(ChanEst, N/size(ChanEst,1),M/size(ChanEst,2));
 
 %%偵錯
 global NoFoundDataTimes;
-if (isnan(ChanEst(:)))
+if (isnan(tilda_CFO(:)))
     NoFoundDataTimes = NoFoundDataTimes+1;
     RxDataSymbEq(1:N,1:M)=RxSignalRadioGrid(1:N,1:M);
     RxSigalRadioFrameCmpCFO(1:N,1:M)=RxSignalRadioGrid(1:N,1:M);
