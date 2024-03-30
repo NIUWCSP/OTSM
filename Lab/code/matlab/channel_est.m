@@ -22,12 +22,14 @@ WnPilotSymb=zeros(N,M);
 WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb) = QamPilotSymbGrid;
 WnPilotSymb(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb) = QamPilotSymbGrid;%有2個Pilot所以放2次
 WnPilotSymb=WnPilotSymb*Wn;
-Tx_PilotSymb=[WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
-              WnPilotSymb(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb)];
+% Tx_PilotSymb=[WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
+              %WnPilotSymb(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb)];
+Tx_PilotSymb=WnPilotSymb(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
 
  % Channel estimation and equalization
-PilotOtsmSymb = [RxSignalRadioGrid(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
-                 RxSignalRadioGrid(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb)];
+%PilotOtsmSymb = [RxSignalRadioGrid(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
+                 %RxSignalRadioGrid(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,1:DelayPilotSymb)];
+PilotOtsmSymb = RxSignalRadioGrid(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
 ChanEst = PilotOtsmSymb ./ Tx_PilotSymb;%通道估计
 
 %%試求gs、G
@@ -53,23 +55,23 @@ XCorrPilot = Y_OTSM_Pilot(:,1)' * Y_OTSM_Pilot(:,2);%導頻符號的交叉相關
 EpsEst = 1/(2*pi) * atan(imag(XCorrPilot)/real(XCorrPilot));%頻率偏移的估計
 
  %測試用CFO
-y_mp1=zeros(size(Y_OTSM_Pilot,1),l_max+1); %64*1
-y_mp2=zeros(size(Y_OTSM_Pilot,1),l_max+1); %64*1
+y_mp1=zeros(l_max+1,size(Y_OTSM_Pilot,1)); %64*1
+y_mp2=zeros(l_max+1,size(Y_OTSM_Pilot,1)); %64*1
 N_p2=sqrt(size(Y_OTSM_Pilot,1))*2;
 
   for l=0:l_max
       for n=1:DelayPilotSymb %1~8
           for mp1=M_data+1:M_data+DelayPilotSymb %41~48 刪gs(l+1,mp1+l+n*M+1).*
-                    y_mp1((mp1-M_data)+(n-1)*8,l+1)= gs(l+1,mp1+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp1+l+n*M+1))*RxSignalRadioGrid(mp1,n);
+                    y_mp1(l+1,(mp1-M_data)+(n-1)*8)= gs(l+1,mp1+l+1+n*M).*exp(1j*2*pi*EpsEst/M*(mp1+l+(n-1)*M+1))*RxSignalRadioGrid(mp1,n);
           end
           for mp2=M_data+N_p2+1:M_data+N_p2+DelayPilotSymb %57~64 刪exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*
-                    y_mp2((mp2-M_data-N_p2)+(n-1)*8,l+1)= exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp2+l+n*M+1))*RxSignalRadioGrid(mp2,n);
+                    y_mp2(l+1,(mp2-M_data-N_p2)+(n-1)*8)= exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp2+l+(n-1)*M+1))*RxSignalRadioGrid(mp2,n);
           end
       end
   end %%equation (17) in [R3]
     tilda_CFO=0; %初始化
   for l=0:l_max %把tilda_CFO的l_max*length(delay_taps)→*1
-    XCorrmp=y_mp1(:,l+1) * (exp(1j*pi/2)*y_mp2(:,l+1)');
+    XCorrmp=y_mp1(l+1,:) * (exp(1j*pi/2)*y_mp2(l+1,:)');
     tilda_CFO = tilda_CFO+(-M/(2*pi*1)* atan(imag(XCorrmp)/real(XCorrmp))); %%equation (18) in [R3]
   end
 
@@ -78,7 +80,7 @@ N_p2=sqrt(size(Y_OTSM_Pilot,1))*2;
  RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ; %%equation (19) in [R3]
 
 
-RxDataSymbEq = RxSigalRadioFrameCmpCFO./repmat(ChanEst, N/size(ChanEst,1),M/size(ChanEst,2));
+RxDataSymbEq = RxSigalRadioFrameCmpCFO./gs_Grid;
 
 %%偵錯
 global NoFoundDataTimes;
@@ -88,6 +90,7 @@ if (isnan(tilda_CFO(:)))
     RxSigalRadioFrameCmpCFO(1:N,1:M)=RxSignalRadioGrid(1:N,1:M);
     return;
 end
+ 
 
 % RxDataSymbEq = DataOtsmSymb ./ repmat(ChanEst, M_data/size(ChanEst,1),M/size(ChanEst,2));
 subplot(232);plot(10*log10(abs(reshape(ChanEst,[],1)).^2)-min(10*log10(abs(reshape(ChanEst,[],1)).^2)));title('channel estimation');%繪製通道估計的幅度譜
@@ -95,7 +98,7 @@ subplot(233);plot(RxSignalRadioFrame(:),'.');axis equal;title('scatter before CF
 subplot(234);plot(RxSigalRadioFrameCmpCFO(:),'.');axis equal;title('scatter after CFO'); axis square;
 % subplot(233);plot(DataOtsmSymb(:),'*');axis equal;title('scatter before equalization');axis square;
 % subplot(234);plot(RxDataSymbEq(:),'.');axis([-1.5,1.5,-1.5,1.5]);title('scatter after equalization'); axis square;
-% subplot(235);plot([RxDataSymbEq;zeros(N-M_data,M)]*Wn,'.');axis([-1.5,1.5,-1.5,1.5]);title('After WHT'); axis square;
+ subplot(235);plot(RxDataSymbEq*Wn,'.');axis([-1.5,1.5,-1.5,1.5]);title('Try EQ&WHT'); axis square;
 text(2,0.6,['NoFoundData: ',num2str(NoFoundDataTimes),' 次']);
 
 end
