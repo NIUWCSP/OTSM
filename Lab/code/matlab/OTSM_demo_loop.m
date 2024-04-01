@@ -64,7 +64,7 @@ for iesn0 = 1:length(SNR_dB)
         txdata = round(txdata.*2^15);
 
         %% 設定Pluto
-        Rx=PlutoSet(txdata);
+        Rx=PlutoSet(txdata,sigma);
 
 
             %% PLOT RX

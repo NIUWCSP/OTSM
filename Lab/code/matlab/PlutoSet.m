@@ -1,4 +1,4 @@
-function [Rx] = PlutoSet(txdata)   
+function [Rx] = PlutoSet(txdata,sigma)   
 
 %設定pluto IP
 ip = '192.168.2.1';
@@ -22,6 +22,7 @@ ip = '192.168.2.1';
     input{s.getInChannel('RX_SAMPLING_FREQ')} = 40e6;
     input{s.getInChannel('RX_RF_BANDWIDTH')} = 20e6;
     input{s.getInChannel('RX1_GAIN_MODE')} = 'manual';%% slow_attack manual
+    %input{s.getInChannel('TX1_GAIN')} = sqrt(sigma/2);
     input{s.getInChannel('RX1_GAIN')} = 1;
     input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
     input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;

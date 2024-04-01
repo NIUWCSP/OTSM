@@ -79,8 +79,10 @@ N_p2=sqrt(size(Y_OTSM_Pilot,1))*2;
 % Estimate carrier freqnecy offset
  RxSigalRadioFrameCmpCFO = RxSignalRadioGrid.*exp(-1j*2*pi*tilda_CFO/M) ; %%equation (19) in [R3]
 
-
-RxDataSymbEq = RxSigalRadioFrameCmpCFO./gs_Grid;
+% Try Eq
+PilotOtsmSymb2 = RxSigalRadioFrameCmpCFO(M_data+1:M_data+DelayPilotSymb,1:DelayPilotSymb);
+ChanEst2 = PilotOtsmSymb2 ./ Tx_PilotSymb;%通道估计
+RxDataSymbEq = RxSigalRadioFrameCmpCFO./repmat(ChanEst2, N/size(ChanEst2,1),M/size(ChanEst2,2));
 
 %%偵錯
 global NoFoundDataTimes;
