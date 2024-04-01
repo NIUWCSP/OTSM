@@ -62,10 +62,10 @@ N_p2=sqrt(size(Y_OTSM_Pilot,1))*2;
   for l=0:l_max
       for n=1:DelayPilotSymb %1~8
           for mp1=M_data+1:M_data+DelayPilotSymb %41~48 刪gs(l+1,mp1+l+n*M+1).*
-                    y_mp1(l+1,(mp1-M_data)+(n-1)*8)= gs(l+1,mp1+l+1+n*M).*exp(1j*2*pi*EpsEst/M*(mp1+l+(n-1)*M+1))*RxSignalRadioGrid(mp1,n);
+                    y_mp1(l+1,(mp1-M_data)+(n-1)*8)= gs(l+1,mp1+l+1+(n-1)*M).*exp(1j*2*pi*EpsEst/M*(mp1+l+(n-1)*M+1))*RxSignalRadioGrid(mp1,n);
           end
           for mp2=M_data+N_p2+1:M_data+N_p2+DelayPilotSymb %57~64 刪exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*
-                    y_mp2(l+1,(mp2-M_data-N_p2)+(n-1)*8)= exp(1j*pi/2)*gs(l+1,mp2+l+n*M+1).*exp(1j*2*pi*EpsEst/M*(mp2+l+(n-1)*M+1))*RxSignalRadioGrid(mp2,n);
+                    y_mp2(l+1,(mp2-M_data-N_p2)+(n-1)*8)= exp(1j*pi/2)*gs(l+1,mp2+l+(n-1)*M+1).*exp(1j*2*pi*EpsEst/M*(mp2+l+(n-1)*M+1))*RxSignalRadioGrid(mp2,n);
           end
       end
   end %%equation (17) in [R3]

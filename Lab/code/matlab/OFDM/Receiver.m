@@ -6,10 +6,6 @@ function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_in
 
 %% OTFS parameters%%%%%%%%%%
 
-% average energy per data symbol
-% eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
-
-
 %% delay-Doppler grid symbol placement
 % max delay spread in the channel
 delay_spread = M/(8/3);%40*64是資料部分 剩下是Pilot跟Sync
@@ -18,14 +14,6 @@ M_data = M-delay_spread;%64-24=40
 data_grid=zeros(M,N);
 data_grid(1:M_data,1:N)=1;
 DelayPilotSymb=sqrt(size(GetPilotBits,2)/2);
-
-
-% Time and frequency resources
-% car_fre = 2.4*10^9;% Carrier frequency 原先4*10^9
-% delta_f = 15*10^3; % subcarrier spacing: 15 KHz
-% T = 1/delta_f; %one time symbol duration in OTFS frame
-
-
 
 
 %% Normalized WHT matrix
@@ -64,30 +52,33 @@ RxSignalExt(:,1)=RxSignal;
                 
          %Pilot side
          RxSignalGrid=reshape(RxSignalRadioFrame,N,M);
+% %%把兩個Pilot分別放入2行
+%          Y_OTSM_Pilot=zeros(N,2);
+%          for i=1:sqrt(size(Y_OTSM_Pilot,1))
+%          %Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+DelayPilotSymb+1:M_data+8*2,1:DelayPilotSymb),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+%          Y_OTSM_Pilot((i-1)*8+1:(i-1)*8+8,1)=RxSignalGrid(M_data+1:M_data+DelayPilotSymb,i);
+%          Y_OTSM_Pilot((i-1)*8+1:(i-1)*8+8,2)=RxSignalGrid(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,i);
+%          end
+
+%%把兩個Pilot切割成4*n後交叉放入2行
          Y_OTSM_Pilot=zeros(N,2);
          for i=1:sqrt(size(Y_OTSM_Pilot,1))
          %Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+DelayPilotSymb+1:M_data+8*2,1:DelayPilotSymb),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
-         Y_OTSM_Pilot((i-1)*8+1:(i-1)*8+8,1)=RxSignalGrid(M_data+1:M_data+DelayPilotSymb,i);
-         Y_OTSM_Pilot((i-1)*8+1:(i-1)*8+8,2)=RxSignalGrid(M_data+DelayPilotSymb*2+1:M_data+DelayPilotSymb*3,i);
+         Y_OTSM_Pilot((i-1)*4+1:(i-1)*4+4,1)=RxSignalGrid(M_data+1:M_data+4,i);
+         Y_OTSM_Pilot((i-1)*4+1:(i-1)*4+4,2)=RxSignalGrid(M_data+5:M_data+8,i);
          end
-
-% %%只切一個Pilot
-%          Y_OTSM_Pilot=zeros(N/2,2);
-%          for i=1:sqrt(size(Y_OTSM_Pilot,1))
-%          %Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+DelayPilotSymb+1:M_data+8*2,1:DelayPilotSymb),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
-%          Y_OTSM_Pilot((i-1)*4+1:(i-1)*4+4,1)=RxSignalGrid(M_data+1:M_data+4,i);
-%          Y_OTSM_Pilot((i-1)*4+1:(i-1)*4+4,2)=RxSignalGrid(M_data+5:M_data+8,i);
-%          end
+         for i=1:sqrt(size(Y_OTSM_Pilot,1))
+         %Y_OTSM_Pilot=reshape(RxSignalGrid(M_data+DelayPilotSymb+1:M_data+8*2,1:DelayPilotSymb),[],1);%傳送資料時Pilot和Sync皆以8*8的形式傳送
+         Y_OTSM_Pilot((i+7)*4+1:(i+7)*4+4,1)=RxSignalGrid(M_data+DelayPilotSymb+1:M_data+DelayPilotSymb+4,i);
+         Y_OTSM_Pilot((i+7)*4+1:(i+7)*4+4,2)=RxSignalGrid(M_data+DelayPilotSymb+5:M_data+DelayPilotSymb+8,i);
+         end
         
-         %%把pilot的8*8資料 拆成4*8、4*8
+         %把pilot的8*8資料 拆成4*8、4*8
 
  % Estimate carrier frequency offset
         [RxDataSymbEq,RxSignalRadioFrameCmpCFO,G] = channel_est(N,M,M_mod,RxSignalRadioFrame,Y_OTSM_Pilot,0);
-
-        %EQ測試用
-                %RxSymbEq=reshape([RxDataSymbEq;
-                                  %zeros(N-M_data,M)],[],1);
         r = reshape(RxSignalRadioFrameCmpCFO,[],1);
+        
         %% OTSM demodulation%%%%
 
             %主要解調變
