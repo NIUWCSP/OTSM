@@ -115,11 +115,11 @@ end
     pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
     legend('Rx', 'Tx')
 
-            %% PLOT RX
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod);
+          %% PLOT RX
+          [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod);
         
-    %% errors count%%%%%
-    global TxDataBits;
+        %% errors count%%%%%
+        global TxDataBits;
         errors_MFGS = sum(xor(est_info_bits_MFGS,TxDataBits));
         errors_1tap = sum(xor(est_info_bits_1tap,TxDataBits));
         errors_LMMSE = sum(xor(est_info_bits_LMMSE,TxDataBits));
