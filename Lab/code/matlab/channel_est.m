@@ -84,6 +84,22 @@ PilotOtsmSymb2 = RxSigalRadioFrameCmpCFO(M_data+1:M_data+DelayPilotSymb,1:DelayP
 ChanEst2 = PilotOtsmSymb2 ./ Tx_PilotSymb;%通道估计
 RxDataSymbEq = RxSigalRadioFrameCmpCFO./repmat(ChanEst2, N/size(ChanEst2,1),M/size(ChanEst2,2));
 
+% %%試求gs、G
+% G=zeros(N*M,N*M);
+% gs_Grid=zeros(N,M,l_max+1);
+% gs=zeros(l_max+1,N*M);
+% for l=0:l_max
+% gs_Grid(:,:,l+1)=repmat(ChanEst2, N/size(ChanEst2,1),M/size(ChanEst2,2));
+% gs(l+1,:)= reshape(gs_Grid(:,:,l+1),1,[]);
+% end
+% 
+% for q=0:N*M-1
+%     for l=0:l_max
+%         if(q>=l)
+%             G(q+1,q+1-l)=gs(l+1,q+1);
+%         end
+%     end
+% end  
 %%偵錯
 global NoFoundDataTimes;
 if (isnan(tilda_CFO(:)))
