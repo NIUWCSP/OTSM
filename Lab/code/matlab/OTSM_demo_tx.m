@@ -46,15 +46,6 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
 
 
 %% Initializing simulation error count variables
-N_fram = 10;
-
-% global iesn0
-global ifram
-for iesn0 = 1:length(SNR_dB)
-    sigma = sqrt(sigma_2(iesn0));
-    for ifram = 1:N_fram 
-        current_frame_number=zeros(1,iesn0);
-        current_frame_number(iesn0)=ifram;
 
         %設定與進入TX函式
         upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
@@ -83,7 +74,7 @@ for iesn0 = 1:length(SNR_dB)
         input{s.getInChannel('RX_RF_BANDWIDTH')} = 20e6;
         input{s.getInChannel('RX1_GAIN_MODE')} = 'manual';%% slow_attack manual
         %input{s.getInChannel('TX1_GAIN')} = sqrt(sigma/2);
-        input{s.getInChannel('RX1_GAIN')} = 1+sqrt(sigma/2);
+        input{s.getInChannel('RX1_GAIN')} = 1;
         input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
         input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
         input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
@@ -118,7 +109,8 @@ for iesn0 = 1:length(SNR_dB)
     
         a=0;%% 輸出迴圈次數
     
-    for i=i:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
+    while(1)
+        for i=i:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
         fprintf('Transmitting Data Block %i ...\n',i);
         input{1} = real(txdata);
         input{2} = imag(txdata);
@@ -126,8 +118,8 @@ for iesn0 = 1:length(SNR_dB)
         a=a+1;
         fprintf('%d\n',a);
         fprintf('Data Block %i Received...\n',i);
-    end    
-    i=0;
+        end 
+    end
     %while沒加
     
 
@@ -187,8 +179,7 @@ for iesn0 = 1:length(SNR_dB)
 %         display(avg_ber_LMMSE,'Average BER - LMMSE equalizer');
 %         display(avg_no_of_iterations_MFGS,'Average number of iterations for the MFGS detector');
 %         disp('####################################################################')
-      end
-end
+
 
 % 
 % %% 結束
