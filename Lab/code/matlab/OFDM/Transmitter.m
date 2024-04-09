@@ -27,7 +27,7 @@ PilotBits = GetPilotBits();%Preamble的data
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();
-QamSync_tilda = QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn); %128*1
+QamSync_tilda = QamAndTilda(SyncBits,M_mod,M_bits,M); %128*1
 
 % Generate data symbols
 global TxDataBits;

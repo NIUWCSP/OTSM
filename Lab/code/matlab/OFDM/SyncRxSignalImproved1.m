@@ -1,7 +1,7 @@
 function startIdx = SyncRxSignalImproved1(rxFrame, overSampFactor,M_mod,N,M,Wn)
 
 %% Definitions 同步找開頭結尾
-numShortPreambleSamples = 16     * overSampFactor;
+numShortPreambleSamples = 32     * overSampFactor;
 numLongPreambleSamples  = M*2 * overSampFactor;
 
 thresholdCoarse = 0.9;%改回原值
@@ -18,7 +18,7 @@ M_bits = log2(M_mod);
 %%調變同步資料
 
 SyncBits = GetSyncBits();%確保正確解讀接收到的數據
-QamSync_tilda = QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn);
+QamSync_tilda = QamAndTilda(SyncBits,M_mod,M_bits,M);
 
 syncSig = QamSync_tilda;
 %syncSig = ifft(SyncSymb_tilda) * sqrt(length(SyncSymb_tilda));
@@ -36,18 +36,7 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 3*numLongPreambleSamples
      % Grab first 32 symbols of B
      initIdx = initIdx + 2*numShortPreambleSamples;
      seg2 = rxFrame( initIdx : initIdx + numShortPreambleSamples - 1 );
-%      seg1=zeros(0);    
-%      for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
-%         seg1 = [seg1
-%                 rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
-%      end
-%      % Grab first 32 symbols of B (8+8 中間空64格)
-%      initIdx = initIdx + 2*numShortPreambleSamples;
-%      seg2=zeros(0);
-%      for j = 0:numShortPreambleSamples/size(QamSyncBits,1)-1
-%         seg2 = [seg2
-%                 rxFrame( initIdx+j*M : initIdx+j*M + size(QamSyncBits,2) - 1 ,1)];
-%      end
+
      % Normalization factors
      seg1Avg = sqrt(sum(abs(seg1).^2));
      seg2Avg = sqrt(sum(abs(seg2).^2));
@@ -59,14 +48,7 @@ for i = 1: frameLen - 2*numShortPreambleSamples - 3*numLongPreambleSamples
      % at a potential coarse begining of an OTSM frame, therefore check
      % Fine synchronization criterion
     if (corrShortCoarse(i) > thresholdCoarse)
-         % Grab B pilot
-%         initIdx  = i + numFFT*2+40+size(QamSyncBits,2);
-%         segPilot=zeros(0);
-%         for k = 0:numLongPreambleSamples/size(QamSyncBits,1)-1
-%             segPilot = [segPilot
-%                         rxFrame( initIdx+k*M+1 : initIdx+k*M + size(QamSyncBits,2) ,1)];
-%         end
-         
+         % Grab B pilot         
           initIdx  = i + 2*numShortPreambleSamples;
           segPilot = rxFrame(initIdx : initIdx + numLongPreambleSamples - 1);
 

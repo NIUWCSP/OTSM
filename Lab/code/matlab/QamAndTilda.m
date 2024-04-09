@@ -1,4 +1,4 @@
-function ReMapFft=QamAndTilda(X,M_mod,M_bits,N,M,Wn)
+function OtdmSymb=QamAndTilda(X,M_mod,M_bits,M)
 
 QamXBits=reshape(qammod(reshape(X,M_bits,size(X,2)/2), M_mod,'gray','InputType','bit'),[],1);
 %QamSyncBits=reshape(QamSyncBits,[],1);
@@ -22,4 +22,6 @@ MapFft = [ ...
 ReMapFft = [ ...
     MapFft(size(MapFft,1)/2+1:end, :);
     MapFft(1:size(MapFft,1)/2, :)];
+%IFFT
+OtdmSymb = ifft(ReMapFft) * sqrt(M*2); %"* sqrt(M*2)"取normalization
 end
