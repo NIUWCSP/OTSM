@@ -31,7 +31,7 @@ QamSync_tilda = QamAndTilda(SyncBits,M_mod,M_bits,N,M,Wn); %128*1
 
 % Generate data symbols
 global TxDataBits;
-TxDataBits = randi([0,1],N_syms_perfram*M_bits,1);%TX的data
+TxDataBits = GetTxDataBits();%TX的data
 TxData=qammod(reshape(TxDataBits,M_bits,N_syms_perfram), M_mod,'gray','InputType','bit');%data=1*2560
 Tx = Generate_2D_data_grid(N,M,TxData,data_grid);
 Tx_Symb=Tx_addPilot(Tx,PilotBits,N,M_mod); 

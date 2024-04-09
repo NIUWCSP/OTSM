@@ -90,9 +90,7 @@ RxSignalExt(:,1)=RxSignal;
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
         [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);
         %%偵錯
-        global NoFoundDataTimes;
-        if (isnan(zn_block_vector(:)))
-            NoFoundDataTimes = NoFoundDataTimes+1;
+        if (isnan(sum(zn_block_vector(:))))
             est_info_bits_MFGS=zeros(M_data*M*M_bits,1);
             est_info_bits_1tap=zeros(M_data*M*M_bits,1);
             est_info_bits_LMMSE=zeros(M_data*M*M_bits,1);

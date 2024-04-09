@@ -116,7 +116,7 @@ end
     legend('Rx', 'Tx')
 
           %% PLOT RX
-          [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod);
+          [est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod,M_bits);
         
         %% errors count%%%%%
         global TxDataBits;
