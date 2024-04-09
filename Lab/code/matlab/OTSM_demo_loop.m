@@ -27,7 +27,7 @@ eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 
 % SNR and variance of the noise
 % SNR = P/\sigma^2; P: avg. power of albhabet transmitted
-SNR_dB = 0:2.5:10;
+SNR_dB = 10:2.5:20;
 SNR = 10.^(SNR_dB/10);
 sigma_2 = (abs(eng_sqrt)^2)./SNR;
 %%%
@@ -45,6 +45,7 @@ avg_ber_LMMSE=zeros(1,length(SNR_dB));
 det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1); %no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
 avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
+
         %設定與進入TX函式
         upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
         txdata = Transmitter(upsample,N,M,M_mod);
