@@ -1,4 +1,4 @@
-function [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal, sigma, N, M, M_mod)
+function [est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(RxSignal, sigma, N, M, M_mod,M_bits)
 
 
 %%廣域變數宣告
@@ -89,7 +89,16 @@ RxSignalExt(:,1)=RxSignal;
         
         %% Generate the block-wise channel matrices in the delay-time and the time-frequency domain
         [Gn_block_matrix,Tn_block_matrix,zn_block_vector,H_t_f]=Generate_Matched_Filter_GS_matrices(N,M,G,r);
-        
+        %%偵錯
+        global NoFoundDataTimes;
+        if (isnan(zn_block_vector(:)))
+            NoFoundDataTimes = NoFoundDataTimes+1;
+            est_info_bits_MFGS=zeros(M_data*M*M_bits,1);
+            est_info_bits_1tap=zeros(M_data*M*M_bits,1);
+            est_info_bits_LMMSE=zeros(M_data*M*M_bits,1);
+            det_iters_MFGS=0;
+            return;
+        end
          %% GS SOR Iterative detection
         
         n_ite_MRC=50; % maximum number of detector iterations
@@ -101,5 +110,4 @@ RxSignalExt(:,1)=RxSignal;
         [est_info_bits_MFGS,det_iters_MFGS,~] = Matched_Filter_GS_detector(N,M,M_mod,sigma,data_grid,Y,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
         [est_info_bits_1tap,~] = TF_single_tap_equalizer(N,M,M_mod,sigma,data_grid,Y,H_t_f,Wn);
         [est_info_bits_LMMSE,~] = Block_LMMSE_detector(N,M,M_mod,sigma,data_grid,Gn_block_matrix,r,Wn);
-        RxDataBits=0;
        

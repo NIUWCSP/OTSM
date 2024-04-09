@@ -45,7 +45,10 @@ avg_ber_LMMSE=zeros(1,length(SNR_dB));
 det_iters_MFGS=0;
 no_of_detetor_iterations_MFGS= zeros(length(SNR_dB),1); %no_of_detetor_iterations_MFGS= zeros(1,set_looptimes);
 avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
-
+        %設定與進入TX函式
+        upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
+        txdata = Transmitter(upsample,N,M,M_mod);
+        txdata = round(txdata.*2^15);
 
 %% Initializing simulation error count variables
 N_fram = 10;
@@ -58,17 +61,13 @@ for iesn0 = 1:length(SNR_dB)
         current_frame_number=zeros(1,iesn0);
         current_frame_number(iesn0)=ifram;
 
-        %設定與進入TX函式
-        upsample=4; %過取樣取4倍，數位還原類比後比較可以不失真        
-        txdata = Transmitter(upsample,N,M,M_mod);
-        txdata = round(txdata.*2^15);
+
 
         %% 設定Pluto
         Rx=PlutoSet(txdata,sigma);
 
-
             %% PLOT RX
-            [RxDataBits,est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod);
+            [est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod,M_bits);
         
     %% errors count%%%%%
     global TxDataBits;
