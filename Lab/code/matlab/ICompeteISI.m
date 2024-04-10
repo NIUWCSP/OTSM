@@ -1,8 +1,8 @@
-function X=ICompeteISI(OtsmSymbWithCP,NumDataCarrier,M,NumCP)
+function X=ICompeteISI(OtsmSymbWithCP,NumDataCarrier,NumCP)
 
 OtsmSymb = OtsmSymbWithCP(NumCP+1:end, :);
 
-OtsmSymbFFT = fft(ModOfdmSymb) / sqrt(M*2);
+OtsmSymbFFT = fft(OtsmSymb) / sqrt(size(OtsmSymb,1));
 Xsize=length(OtsmSymbFFT);
 %%在FFT的過程中，訊號的振幅會被FFT的點數所縮放。 為了在頻域中正確表示原始訊號的幅度
 DemodOtsmSymb = [ ...

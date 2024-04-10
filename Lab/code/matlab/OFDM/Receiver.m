@@ -28,8 +28,9 @@ NumCP = 16; %V3 CP：循環前綴(NumFFT = 128後16貼回前面)，CP：避免IS
 RxSignalExt(:,1)=RxSignal;
 
         NumSyncSymb =  NumSyncPreamble*2+128;%128是調變後的Sync值
+        %NumDataSymb = N*M+20+ NumCP;%20是Complete加入的20個0
         NumDataSymb = N*M;
-        NumRadioSymb = NumSyncSymb + NumCP + NumDataSymb;
+        NumRadioSymb = NumSyncSymb + NumDataSymb;
         
         %%畫圖準備
         figure(3);clf;
@@ -46,7 +47,8 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb  + NumCP:StartIdx+NumRadioSymb-1);
+        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb :StartIdx+NumRadioSymb-1);
+        %RxSignalRadioFrame = ICompeteISI(RxSignalRadioFrame,N*M,NumCP);
 
          %% OTSM Reobtain Pilot%%%%
                 
