@@ -1,4 +1,4 @@
-function [Rx] = PlutoSet(txdata,sigma)   
+function [input,s] = PlutoSet(txdata)   
 
 %設定pluto IP
 ip = '192.168.2.1';
@@ -10,7 +10,7 @@ ip = '192.168.2.1';
     s.in_ch_no = 2;
     s.out_ch_no = 2;
     s.in_ch_size = length(txdata);
-    s.out_ch_size = length(txdata) * 4;
+    s.out_ch_size = length(txdata) * 10;
     
     s = s.setupImpl();
     
@@ -27,25 +27,25 @@ ip = '192.168.2.1';
     input{s.getInChannel('TX_LO_FREQ')} = 2400e6;
     input{s.getInChannel('TX_SAMPLING_FREQ')} = 40e6;
     input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
-for i=0:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
-    input{1} = real(txdata);
-    input{2} = imag(txdata);
-    output = stepImpl(s, input);%調用pluto的通道資料
-end
-    I = output{1};
-    Q = output{2};
-    Rx = I+1i*Q;
-    figure(2); clf;%clear figure
-    set(gcf,'name','立鎂科技-RX實際I/Q接收狀態'); % EVAN for debug OK %get current figure
-    subplot(121);
-    plot(I);
-    hold on;
-    plot(Q);
-    subplot(122);
-    pwelch(Rx, [],[],[], 40e6, 'centered', 'psd');
-    % 20230301新增將PSD圖疊起來
-    hold on; %'centered' 表示計算雙邊頻,'psd'表示頻譜類型
-    pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
-    legend('Rx', 'Tx')
-
-end
+% for i=0:4 %由於PLUTO-USB數據量受限~因此RX使用此FOR-LOOP等待TX數據進入 by Evan 2019-04-16
+%     input{1} = real(txdata);
+%     input{2} = imag(txdata);
+%     output = stepImpl(s, input);%調用pluto的通道資料
+% end
+%     I = output{1};
+%     Q = output{2};
+%     Rx = I+1i*Q;
+%     figure(2); clf;%clear figure
+%     set(gcf,'name','立鎂科技-RX實際I/Q接收狀態'); % EVAN for debug OK %get current figure
+%     subplot(121);
+%     plot(I);
+%     hold on;
+%     plot(Q);
+%     subplot(122);
+%     pwelch(Rx, [],[],[], 40e6, 'centered', 'psd');
+%     % 20230301新增將PSD圖疊起來
+%     hold on; %'centered' 表示計算雙邊頻,'psd'表示頻譜類型
+%     pwelch(txdata, [],[],[], 40e6, 'centered', 'psd');
+%     legend('Rx', 'Tx')
+% 
+% end

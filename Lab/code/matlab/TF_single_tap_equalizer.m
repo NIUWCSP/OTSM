@@ -25,4 +25,7 @@ x_est=reshape(X_est,1,N*M);
 x_data=x_est(data_index);
 est_bits=reshape(qamdemod(x_data,M_mod,'gray','OutputType','bit'),N_bits_perfram,1);
 
+%畫圖
+subplot(222);
+plot(ifft(X_tf.')*Wn,'.');title('single tap equalizer');axis equal;
 end

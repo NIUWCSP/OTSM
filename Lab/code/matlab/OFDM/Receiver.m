@@ -104,6 +104,8 @@ RxSignalExt(:,1)=RxSignal;
         if(M_mod==64)
             omega=0.25;
         end
+        figure(5);
+        set(gcf,'name','三種偵測器EQ圖','Position', [650 50 600 400]);
         decision=1; %1-hard decision, 0-soft decision
         [est_info_bits_MFGS,det_iters_MFGS,~] = Matched_Filter_GS_detector(N,M,M_mod,sigma,data_grid,Y,H_t_f,n_ite_MRC,omega,Tn_block_matrix,Gn_block_matrix,zn_block_vector,r,Wn,decision);
         [est_info_bits_1tap,~] = TF_single_tap_equalizer(N,M,M_mod,sigma,data_grid,Y,H_t_f,Wn);

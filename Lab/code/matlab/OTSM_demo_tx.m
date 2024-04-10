@@ -61,7 +61,7 @@ avg_no_of_iterations_MFGS=zeros(1,length(SNR_dB));
         s.in_ch_no = 2;
         s.out_ch_no = 2;
         s.in_ch_size = length(txdata);
-        s.out_ch_size = length(txdata) * 4;
+        s.out_ch_size = length(txdata) * 10;
         
         s = s.setupImpl();
         

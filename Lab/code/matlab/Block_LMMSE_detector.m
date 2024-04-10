@@ -22,4 +22,7 @@ X_est=X_tilda_est*Wn;
 x_est=reshape(X_est,1,N*M);
 x_data=x_est(data_index);
 est_bits=reshape(qamdemod(x_data,M_mod,'gray','OutputType','bit'),N_bits_perfram,1);
+%畫圖
+subplot(223);
+plot(x_est,'.');title('LMMSE detector');axis equal;
 end
