@@ -27,7 +27,7 @@ eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 
 % SNR and variance of the noise
 % SNR = P/\sigma^2; P: avg. power of albhabet transmitted
-SNR_dB = 10:2.5:20;
+SNR_dB = 0:2.5:10;
 SNR = 10.^(SNR_dB/10);
 sigma_2 = (abs(eng_sqrt)^2)./SNR;
 %%%

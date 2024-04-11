@@ -27,7 +27,7 @@ PilotBits = GetPilotBits();%Preamble的data
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();
-QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/2), M_mod,'gray','InputType','bit'),[],1);
+QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
 QamSync_tilda = CompeteISI(QamSyncBits,0); %128*1
 
 % Generate data symbols

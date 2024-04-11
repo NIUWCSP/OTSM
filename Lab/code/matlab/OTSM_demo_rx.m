@@ -52,7 +52,7 @@ txdata = Transmitter(upsample,N,M,M_mod);
 txdata = round(txdata.*2^15);
 
 %% 設定Pluto
-[input,s]=PlutoSet(txdata);
+[~,s]=PlutoSet(txdata);
         
 %% Initializing simulation error count variables
 N_fram = 10;
@@ -60,7 +60,7 @@ N_fram = 10;
 % global iesn0
 global ifram
 for iesn0 = 1:length(SNR_dB)
-    sigma = sqrt(sigma_2(iesn0));
+     sigma = sqrt(sigma_2(iesn0));
     for ifram = 1:N_fram 
         current_frame_number=zeros(1,iesn0);
         current_frame_number(iesn0)=ifram;
