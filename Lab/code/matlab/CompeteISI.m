@@ -1,4 +1,4 @@
-function OtdmSymbWithCP=CompeteISI(X,NumCP)
+function OtsmSymbWithCP=CompeteISI(X,NumCP,M)
 
 % QamXBits=reshape(qammod(reshape(X,M_bits,size(X,2)/2), M_mod,'gray','InputType','bit'),[],1);
 %QamSyncBits=reshape(QamSyncBits,[],1);
@@ -23,9 +23,9 @@ ReMapFft = [ ...
     MapFft(size(MapFft,1)/2+1:end, :);
     MapFft(1:size(MapFft,1)/2, :)];
 %IFFT
-OtdmSymb = ifft(ReMapFft) * sqrt(size(ReMapFft,1)); %"* sqrt(M*2)"取normalization
+OtsmSymb = ifft(ReMapFft) * sqrt(M); %"* sqrt(M)"取normalization
 
-OtdmSymbWithCP = [ ...
-    OtdmSymb(size(OtdmSymb,1)-NumCP+1:end, :);
-    OtdmSymb];
+OtsmSymbWithCP = [ ...
+    OtsmSymb(size(OtsmSymb,1)-NumCP+1:end, :);
+    OtsmSymb];
 end

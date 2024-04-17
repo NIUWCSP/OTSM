@@ -28,7 +28,7 @@ PilotBits = GetPilotBits();%Preamble的data
 % Generate synchronization symbols
 SyncBits = GetSyncBits();
 QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
-QamSync_tilda = CompeteISI(QamSyncBits,0); %128*1
+QamSync_tilda = CompeteISI(QamSyncBits,0,M); %128*1
 
 % Generate data symbols
 global TxDataBits;
@@ -40,11 +40,13 @@ Tx_Symb=Tx_addPilot(Tx,PilotBits,N,M_mod);
 %% OTSM modulation%%%%
 Tx_tilda=Tx_Symb*Wn;              %equation (6) in [R1]   %Tx=X
 tx_Data_signal=reshape(Tx_tilda,[],1);  %equation (7) in [R1]
-%tx_Data_signal=CompeteISI(reshape(Tx_tilda,[],1),NumCP);
+%tx_Data_signal = ifft(tx_Data_signal) * sqrt(1);
+%tx_Data_signal=CompeteISI(reshape(Tx_tilda,[],1),0,M);
 TxSignal = [ ...
     QamSync_tilda(1:NumSyncPreamble);
     QamSync_tilda(1:NumSyncPreamble);
     QamSync_tilda;
+    tx_Data_signal(size(tx_Data_signal,1)-NumCP+1:end, :)
     tx_Data_signal];
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper 
 tx_signal2=rcosflt(TxSignal,1,upsample, 'filter', flt1); %4240(TxSignal)*4(upsample)+(513(flt1)-1)：因為捲積所以要-1

@@ -19,7 +19,7 @@ M_bits = log2(M_mod);
 
 SyncBits = GetSyncBits();%確保正確解讀接收到的數據
 QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
-QamSync_ISI = CompeteISI(QamSyncBits,0); %128*1
+QamSync_ISI = CompeteISI(QamSyncBits,0,M); %128*1
 
 syncSig = QamSync_ISI;
 %syncSig = ifft(SyncSymb_tilda) * sqrt(length(SyncSymb_tilda));
