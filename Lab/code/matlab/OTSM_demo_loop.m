@@ -140,5 +140,6 @@ legend('MFGS','single tap','LMMSE')
 % 印出圖片{次數}.png
 filename = sprintf('%d.png', png_times);  % 將 '次數' 替換為你想要的數字
 saveas(gcf, filename);
+close all; %關閉所有圖片
 
 end
