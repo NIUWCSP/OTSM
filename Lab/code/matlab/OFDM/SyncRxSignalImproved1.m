@@ -83,5 +83,6 @@ plot(tAxis, abs(corrFine))
 plot(tAxis, roi)
 title('sync plot');
 xlabel('time [ms]')
+ylabel('autocorrelation')
 legend('corrShortCoarse', 'corrFine', 'ROI')
 hold off
