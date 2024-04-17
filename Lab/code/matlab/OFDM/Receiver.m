@@ -30,7 +30,7 @@ RxSignalExt(:,1)=RxSignal;
         NumSyncSymb =  NumSyncPreamble*2+128;%128是調變後的Sync值
         %NumDataSymb = N*M+20+ NumCP;%20是Complete加入的20個0
         NumDataSymb = N*M;
-        NumRadioSymb = NumSyncSymb + NumDataSymb;
+        NumRadioSymb = NumSyncSymb + NumCP + NumDataSymb;
         
         %%畫圖準備
         figure(3);clf;
@@ -47,8 +47,9 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb :StartIdx+NumRadioSymb-1);
-        %RxSignalRadioFrame = ICompeteISI(RxSignalRadioFrame,N*M,NumCP);
+        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb+NumCP :StartIdx+NumRadioSymb-1);
+        %RxSignalRadioFrame =fft(RxSignalRadioFrame ) / sqrt(1);
+        %RxSignalRadioFrame = ICompeteISI(RxSignalRadioFrame,N*M,M,0);
 
          %% OTSM Reobtain Pilot%%%%
                 
@@ -85,6 +86,7 @@ RxSignalExt(:,1)=RxSignal;
 
             %主要解調變
                 Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
+                Y_tilda(M_data+1:end,:)=0;  %去除Pilot
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
             
          
