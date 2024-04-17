@@ -11,6 +11,8 @@ addpath ..\..\code\matlab\OFDM
 global NoFoundDataTimes;
 NoFoundDataTimes = 0;
 
+png_times = 1; %生成圖片次數
+while true
 
 
 %%% OTFS parameters%%%%%%%%%%
@@ -135,3 +137,8 @@ hold on
 semilogy(SNR_dB,avg_ber_LMMSE,'-square','LineWidth',2,'MarkerSize',8)
 legend('MFGS','single tap','LMMSE')
 
+% 印出圖片{次數}.png
+filename = sprintf('%d.png', png_times);  % 將 '次數' 替換為你想要的數字
+saveas(gcf, filename);
+
+end
