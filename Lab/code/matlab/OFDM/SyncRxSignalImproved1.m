@@ -19,13 +19,14 @@ M_bits = log2(M_mod);
 
 SyncBits = GetSyncBits();%確保正確解讀接收到的數據
 QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
-syncSymbExt = [ 0;
-                QamSyncBits(end/2+1:end);
-                zeros(19,1);
-                QamSyncBits(1:end/2)];
+% syncSymbExt = [ 0;
+%                 QamSyncBits(end/2+1:end);
+%                 zeros(19,1);
+%                 QamSyncBits(1:end/2)];
+syncSymbExt = CompeteISI(QamSyncBits,0,N,M,Wn);
 
-%syncSig = syncSymbExt;
-syncSig = ifft(syncSymbExt) * sqrt(128);
+syncSig = syncSymbExt;
+%syncSig = ifft(syncSymbExt) * sqrt(M*2);
 
 %% Cross correlate different segments of the Rx signal, and the sync signal
 corrShortCoarse  = zeros(1, frameLen);

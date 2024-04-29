@@ -1,4 +1,4 @@
-function OtsmSymbWithCP=CompeteISI(X,NumCP,M)
+function OtsmSymbWithCP=CompeteISI(X,NumCP,N,M,Wn)
 
 % QamXBits=reshape(qammod(reshape(X,M_bits,size(X,2)/2), M_mod,'gray','InputType','bit'),[],1);
 %QamSyncBits=reshape(QamSyncBits,[],1);
@@ -22,10 +22,22 @@ MapFft = [ ...
 ReMapFft = [ ...
     MapFft(size(MapFft,1)/2+1:end, :);
     MapFft(1:size(MapFft,1)/2, :)];
-%IFFT
-OtsmSymb = ifft(ReMapFft) * sqrt(128); %"* sqrt(M)"取normalization
-
+%%IFFT
+%OtsmSymb =  ReMapFft * sqrt(M*2);
+OtsmSymb = ifft(ReMapFft) * sqrt(M*2); %"* sqrt(M*2)"取normalization
 OtsmSymbWithCP = [ ...
     OtsmSymb(size(OtsmSymb,1)-NumCP+1:end, :);
     OtsmSymb];
+
+%%嘗試不用IFFT改用WHT
+% ReMapFftGrid=reshape(ReMapFft,[],M);
+% OtsmSymbGrid=zeros(N,M);
+% OtsmSymbGrid(1:size(ReMapFftGrid,1),1:M)=ReMapFftGrid;
+% OtsmSymbGrid_tilda=OtsmSymbGrid*Wn;
+% FinalOtsmSymb=reshape(OtsmSymbGrid_tilda(1:size(ReMapFftGrid,1),1:M),[],1);
+% OtsmSymbWithCP = [ ...
+%     FinalOtsmSymb(size(FinalOtsmSymb,1)-NumCP+1:end, :);
+%     FinalOtsmSymb];
+
+
 end

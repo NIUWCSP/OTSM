@@ -34,6 +34,8 @@ RxSignalExt(:,1)=RxSignal;
         
         %%畫圖準備
         figure(3);clf;
+
+        
         
         %StartIdx = SyncRxSignalImproved2(RxSignalExt,M_mod,N,M);
         StartIdx = SyncRxSignalImproved1(RxSignalExt, 1 ,M_mod,N,M,Wn);
@@ -43,7 +45,7 @@ RxSignalExt(:,1)=RxSignal;
         if(StartIdx == -1)
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
-        elseif(StartIdx+NumDataSymb-1 >= length(RxSignalExt))
+        elseif(StartIdx+NumRadioSymb-1 >= length(RxSignalExt))
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
@@ -86,7 +88,7 @@ RxSignalExt(:,1)=RxSignal;
 
             %主要解調變
                 Y_tilda=reshape(r,M,N);     %equation (11) in [R1]
-                Y_tilda(M_data+1:end,:)=0;  %去除Pilot
+                %Y_tilda(M_data+1:end,:)=0;  %去除Pilot
                 Y = Y_tilda*Wn;             %equation (12) in [R1]
             
          

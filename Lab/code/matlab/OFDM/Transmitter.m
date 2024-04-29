@@ -28,7 +28,7 @@ PilotBits = GetPilotBits();%Preamble的data
 % Generate synchronization symbols
 SyncBits = GetSyncBits();
 QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
-QamSync_tilda = CompeteISI(QamSyncBits,0,M); %128*1
+QamSync_tilda = CompeteISI(QamSyncBits,0,N,M,Wn); %128*1
 
 % Generate data symbols
 global TxDataBits;
@@ -40,7 +40,7 @@ Tx_Symb=Tx_addPilot(Tx,PilotBits,N,M_mod);
 %% OTSM modulation%%%%
 Tx_tilda=Tx_Symb*Wn;              %equation (6) in [R1]   %Tx=X
 tx_Data_signal=reshape(Tx_tilda,[],1);  %equation (7) in [R1]
-%tx_Data_signal = ifft(tx_Data_signal) * sqrt(1);
+%tx_Data_signal = ifft(tx_Data_signal) * sqrt(M*2);
 %tx_Data_signal=CompeteISI(reshape(Tx_tilda,[],1),0,M);
 TxSignal = [ ...
     QamSync_tilda(1:NumSyncPreamble);
