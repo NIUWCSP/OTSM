@@ -24,7 +24,7 @@ ReMapFft = [ ...
     MapFft(1:size(MapFft,1)/2, :)];
 %%IFFT
 %OtsmSymb =  ReMapFft * sqrt(M*2);
-OtsmSymb = ifft(ReMapFft) * sqrt(M*2); %"* sqrt(M*2)"取normalization
+OtsmSymb = ifft(ReMapFft) * sqrt(M*3); %"* sqrt(M*2)"取normalization
 OtsmSymbWithCP = [ ...
     OtsmSymb(size(OtsmSymb,1)-NumCP+1:end, :);
     OtsmSymb];
