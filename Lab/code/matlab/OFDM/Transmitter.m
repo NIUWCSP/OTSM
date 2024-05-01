@@ -27,8 +27,14 @@ PilotBits = GetPilotBits();%Preamble的data
 
 % Generate synchronization symbols
 SyncBits = GetSyncBits();
-QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
-QamSync_tilda = CompeteISI(QamSyncBits,0,N,M,Wn); %128*1
+%QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
+%QamSync_tilda = CompeteISI(QamSyncBits,0,N,M,Wn); %128*1
+% Symbol mapping: BPSK==========================================
+BpskModObj = comm.BPSKModulator('PhaseOffset', pi/4);%'PhaseOffset', pi/4：0度偏移成45度、180度偏移成225度
+BPSKSyncBits=step(BpskModObj,SyncBits);
+QamSync_tilda = CompeteISI(BPSKSyncBits,0,N,M,Wn); %128*1
+%===============================================================
+
 
 % Generate data symbols
 global TxDataBits;

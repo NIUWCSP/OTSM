@@ -90,10 +90,10 @@ end
           [est_info_bits_MFGS,det_iters_MFGS,est_info_bits_1tap,est_info_bits_LMMSE] = Receiver(Rx(1:upsample:end), sigma, N, M, M_mod,M_bits);
         
         %% errors count%%%%%
-        global TxDataBits;
-        errors_MFGS = sum(xor(est_info_bits_MFGS,TxDataBits));
-        errors_1tap = sum(xor(est_info_bits_1tap,TxDataBits));
-        errors_LMMSE = sum(xor(est_info_bits_LMMSE,TxDataBits));
+
+        errors_MFGS = sum(xor(est_info_bits_MFGS,GetTxDataBits));
+        errors_1tap = sum(xor(est_info_bits_1tap,GetTxDataBits));
+        errors_LMMSE = sum(xor(est_info_bits_LMMSE,GetTxDataBits));
 
         
         err_ber_MFGS(1,iesn0) = err_ber_MFGS(1,iesn0) + errors_MFGS;
@@ -107,9 +107,9 @@ end
         %%  Error count
         
         avg_no_of_iterations_MFGS(iesn0)=no_of_detetor_iterations_MFGS(iesn0)/ifram;
-        avg_ber_MFGS(1,iesn0)=err_ber_MFGS(1,iesn0).'/length(TxDataBits)/ifram;
-        avg_ber_1tap(1,iesn0)=err_ber_1tap(1,iesn0).'/length(TxDataBits)/ifram;
-        avg_ber_LMMSE(1,iesn0)=err_ber_LMMSE(1,iesn0).'/length(TxDataBits)/ifram;
+        avg_ber_MFGS(1,iesn0)=err_ber_MFGS(1,iesn0).'/length(GetTxDataBits)/ifram;
+        avg_ber_1tap(1,iesn0)=err_ber_1tap(1,iesn0).'/length(GetTxDataBits)/ifram;
+        avg_ber_LMMSE(1,iesn0)=err_ber_LMMSE(1,iesn0).'/length(GetTxDataBits)/ifram;
             
         %%         DISP error performance details
         clc

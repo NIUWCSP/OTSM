@@ -18,13 +18,17 @@ M_bits = log2(M_mod);
 %%調變同步資料
 
 SyncBits = GetSyncBits();%確保正確解讀接收到的數據
-QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
+%QamSyncBits=reshape(qammod(reshape(SyncBits,M_bits,size(SyncBits,2)/M_bits), M_mod,'gray','InputType','bit'),[],1);
 % syncSymbExt = [ 0;
 %                 QamSyncBits(end/2+1:end);
 %                 zeros(19,1);
 %                 QamSyncBits(1:end/2)];
-syncSymbExt = CompeteISI(QamSyncBits,0,N,M,Wn);
-
+%syncSymbExt = CompeteISI(QamSyncBits,0,N,M,Wn);
+%========================Try BPSK========================
+BpskModObj = comm.BPSKModulator('PhaseOffset', pi/4);%'PhaseOffset', pi/4：0度偏移成45度、180度偏移成225度
+BPSKSyncBits=step(BpskModObj,SyncBits);
+syncSymbExt = CompeteISI(BPSKSyncBits,0,N,M,Wn); %128*1
+%========================================================
 syncSig = syncSymbExt;
 %syncSig = ifft(syncSymbExt) * sqrt(M*2);
 
