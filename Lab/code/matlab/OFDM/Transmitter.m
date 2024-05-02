@@ -52,6 +52,7 @@ TxSignal = [ ...
     QamSync_tilda(1:NumSyncPreamble);
     QamSync_tilda(1:NumSyncPreamble);
     QamSync_tilda;
+    zeros(128,1);
     tx_Data_signal(size(tx_Data_signal,1)-NumCP+1:end, :)
     tx_Data_signal];
 flt1=rcosine(1,upsample,'fir/sqrt',0.05,64);%pulse shaper 

@@ -49,7 +49,7 @@ RxSignalExt(:,1)=RxSignal;
             StartIdx = 1;
             NoFoundDataTimes=NoFoundDataTimes+1;
         end
-        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb+NumCP :StartIdx+NumRadioSymb-1);
+        RxSignalRadioFrame = RxSignalExt(StartIdx + NumSyncSymb+NumCP+128 :StartIdx+NumRadioSymb-1+128);
         %RxSignalRadioFrame =fft(RxSignalRadioFrame ) / sqrt(1);
         %RxSignalRadioFrame = ICompeteISI(RxSignalRadioFrame,N*M,M,0);
 
