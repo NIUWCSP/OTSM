@@ -1,0 +1,343 @@
+
+module ltp_controller(
+						iCLK, 				// LCD display clock
+						iRST_n, 			// systen reset
+						// SDRAM SIDE 
+						iREAD_DATA1, 		// R and G  color data form sdram 	
+						iREAD_DATA2,		// B color data form sdram
+						iSW,
+						oREAD_SDRAM_EN,		// read sdram data control signal
+						//LCD SIDE
+						oHD,				// LCD Horizontal sync 
+						oVD,				// LCD Vertical sync 	
+						oDEN,				// LCD Data Enable
+						oLCD_R,				// LCD Red color data 
+						oLCD_G,             // LCD Green color data  
+						oLCD_B,             // LCD Blue color data  
+						);
+//============================================================================
+// PARAMETER declarations
+//============================================================================
+parameter H_LINE = 1056; 
+parameter V_LINE = 525;
+parameter Hsync_Blank = 46;   //H_SYNC + H_Back_Porch
+parameter Hsync_Front_Porch = 210;
+parameter Vertical_Back_Porch = 23; //V_SYNC + V_BACK_PORCH
+parameter Vertical_Front_Porch = 22;
+//===========================================================================
+// PORT declarations
+//===========================================================================
+input			iCLK;   
+input			iRST_n;
+input	[15:0]	iREAD_DATA1;
+input	[15:0]	iREAD_DATA2;
+input	[17:0]	iSW;
+output			oREAD_SDRAM_EN;
+output	[7:0]	oLCD_R;		
+output  [7:0]	oLCD_G;
+output  [7:0]	oLCD_B;
+output			oHD;
+output			oVD;
+output			oDEN;
+//=============================================================================
+// REG/WIRE declarations
+//=============================================================================
+reg		[10:0]  x_cnt;  
+reg		[9:0]	y_cnt; 
+wire	[7:0]	read_red;
+wire	[7:0]	read_green;
+wire	[7:0]	read_blue; 
+wire			display_area;
+wire			oREAD_SDRAM_EN;
+wire	[4:0]	One_Hot;
+wire	[7:0]	gray;
+wire	[7:0]	gray_contrast;
+
+reg				mhd;
+reg				mvd;
+reg				mden;
+reg				oHD;
+reg				oVD;
+reg				oDEN;
+reg		[7:0]	oLCD_R;
+reg		[7:0]	oLCD_G;	
+reg		[7:0]	oLCD_B;		
+//=============================================================================
+// Structural coding
+//=============================================================================
+
+// This signal control reading data form SDRAM , if high read color data form sdram  .
+assign	oREAD_SDRAM_EN = (	(x_cnt>Hsync_Blank-2)&& //214
+							(x_cnt<(H_LINE-Hsync_Front_Porch-1))&& //1015
+							(y_cnt>(Vertical_Back_Porch-1))&& // //34
+							(y_cnt<(V_LINE - Vertical_Front_Porch)) //515
+						 )?  1'b1 : 1'b0;
+						
+// This signal indicate the lcd display area .
+assign	display_area = ((x_cnt>(Hsync_Blank-1)&& //>215
+						(x_cnt<(H_LINE-Hsync_Front_Porch))&& //< 1016
+						(y_cnt>(Vertical_Back_Porch-1))&& 
+						(y_cnt<(V_LINE - Vertical_Front_Porch-1))
+						))  ? 1'b1 : 1'b0;
+
+assign	read_red 	= display_area ? iREAD_DATA2[9:2] : 8'b0;
+assign	read_green 	= display_area ? {iREAD_DATA1[14:10],iREAD_DATA2[14:12]}: 8'b0;
+assign	read_blue 	= display_area ? iREAD_DATA1[9:2] : 8'b0;//8'b11111111
+
+
+assign	One_Hot = iSW[14:10];
+assign	gray = read_red[7:5] + read_green[7:1]+read_green[7:3] + read_blue[7:3];
+assign	color1 = read_red[7:5]* 4'b0001 + read_green[7:1]+read_green[7:3] + read_blue[7:3];//顏色增強
+assign	color2 = read_red[7:5] + read_green[7:1]* 4'b0001+read_green[7:3]* 4'b0001 + read_blue[7:3];
+assign	color3 = read_red[7:5] + read_green[7:1]+read_green[7:3] + read_blue[7:3]* 4'b0001;
+
+contrast u(
+	.ibright(gray),
+	.obright(gray_contrast)
+);
+
+///////////////////////// x  y counter  and lcd hd generator //////////////////
+always@(posedge iCLK or negedge iRST_n)
+	begin
+		if (!iRST_n)
+		begin
+			x_cnt <= 11'd0;	
+			mhd  <= 1'd0;  	
+		end	
+		else if (x_cnt == (H_LINE-1))
+		begin
+			x_cnt <= 11'd0;
+			mhd  <= 1'd0;
+		end	   
+		else
+		begin
+			x_cnt <= x_cnt + 11'd1;
+			mhd  <= 1'd1;
+		end	
+	end
+
+always@(posedge iCLK or negedge iRST_n)
+	begin
+		if (!iRST_n)
+			y_cnt <= 10'd0;
+		else if (x_cnt == (H_LINE-1))
+		begin
+			if (y_cnt == (V_LINE-1))
+				y_cnt <= 10'd0;
+			else
+				y_cnt <= y_cnt + 10'd1;	
+		end
+	end
+////////////////////////////// touch panel timing //////////////////
+
+always@(posedge iCLK  or negedge iRST_n)
+	begin
+		if (!iRST_n)
+			mvd  <= 1'b1;
+		else if (y_cnt == 10'd0)
+			mvd  <= 1'b0;
+		else
+			mvd  <= 1'b1;
+	end			
+
+always@(posedge iCLK  or negedge iRST_n)
+	begin
+		if (!iRST_n)
+			mden  <= 1'b0;
+		else if (display_area)
+			mden  <= 1'b1;
+		else
+			mden  <= 1'b0;
+	end			
+
+always@(posedge iCLK or negedge iRST_n)
+	begin
+		if (!iRST_n)
+			begin
+				oHD	<= 1'd0;
+				oVD	<= 1'd0;
+				oDEN <= 1'd0;
+				oLCD_R <= 8'd0;
+				oLCD_G <= 8'd0;
+				oLCD_B <= 8'd0;
+			end
+
+		else if (iSW[1 ]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin						//顏色增強
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= color1;
+				oLCD_G <= gray;
+				oLCD_B <= gray;
+			end
+		else if (iSW[2 ]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= gray;
+				oLCD_G <= color2;
+				oLCD_B <= gray;
+			end
+		else if (iSW[3 ]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= gray;
+				oLCD_G <= gray;
+				oLCD_B <= color3;
+			end
+		else if (iSW[4 ]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= gray;
+				oLCD_G <= color2;
+				oLCD_B <= color3;
+			end
+		else if (iSW[5 ]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= color1;
+				oLCD_G <= gray;
+				oLCD_B <= color3;
+			end
+		else if (iSW[6 ]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= color1;
+				oLCD_G <= color2;
+				oLCD_B <= gray;
+			end
+			
+			
+			
+		else if (iSW[16]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= gray;
+				oLCD_G <= read_green;
+				oLCD_B <= read_blue;
+			end	
+		else if (iSW[15]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // use case module
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= gray_contrast;
+				oLCD_G <= gray_contrast;
+				oLCD_B <= gray_contrast;
+			end		
+		else if (iSW[14]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440)) // contrast r=0.7, ROUNDDOWN(IF(RC1<32,RC1*2,IF(RC1<128,RC1+32,RC1*0.75+64)),0)
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= (gray<32)? (gray<<1): ((gray<128)? (gray+32): (gray>>2)+(gray>>1)+64 );
+				oLCD_G <= (gray<32)? (gray<<1): ((gray<128)? (gray+32): (gray>>2)+(gray>>1)+64 );
+				oLCD_B <= (gray<32)? (gray<<1): ((gray<128)? (gray+32): (gray>>2)+(gray>>1)+64 );
+			end		
+		else if (iSW[13]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440)) // contrast r=0.7, ROUNDDOWN(IF(RC1<32,RC1*2,IF(RC1<128,RC1+32,RC1*0.75+64)),0)
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= (gray<32)? (gray*2): ((gray<128)? (gray+32): (gray*3/4+64 ) ) ;
+				oLCD_G <= (gray<32)? (gray*2): ((gray<128)? (gray+32): (gray*3/4+64 ) ) ;
+				oLCD_B <= (gray<32)? (gray*2): ((gray<128)? (gray+32): (gray*3/4+64 ) ) ;
+			end		
+		else if (iSW[12]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440)) // gamma r=2, 
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= 255*((gray/255)*(gray/255));
+				oLCD_G <= 255*((gray/255)*(gray/255));
+				oLCD_B <= 255*((gray/255)*(gray/255));
+			end		
+		else if (iSW[11]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440) ) // gamma r=2
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= 255*((gray/255)^2); 
+				oLCD_G <= 255*((gray/255)^2);
+				oLCD_B <= 255*((gray/255)^2);
+			end		
+		else if (iSW[10]==1'b1 && (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440)) // 256 level gray
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= gray;
+				oLCD_G <= gray;
+				oLCD_B <= gray;
+			end		
+		else if ( (x_cnt>Hsync_Blank+50) && (x_cnt<Hsync_Blank+750) && (y_cnt>Vertical_Back_Porch+40) && (y_cnt<Vertical_Back_Porch+440)) // 256 level gray frame
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= read_red;
+				oLCD_G <= read_green;
+				oLCD_B <= read_blue;
+			end		
+		else
+			begin
+				oHD	<= mhd;
+				oVD	<= mvd;
+				oDEN <= mden;
+				oLCD_R <= gray;
+				oLCD_G <= gray;
+				oLCD_B <= gray;
+//				oLCD_R <= read_red;
+//				oLCD_G <= read_green;
+//				oLCD_B <= read_blue;
+			end		
+	end
+						
+endmodule 
+
+module dehaze (
+    input [7:0] iR,
+    input [7:0] iG,
+    input [7:0] iB,
+    output [7:0] oR,
+    output [7:0] oG,
+    output [7:0] oB
+);
+    // Implement dehazing algorithm here
+    // This is a simplified example, actual implementation may vary
+    assign oR = (iR > 128) ? iR - 30 : iR + 30;
+    assign oG = (iG > 128) ? iG - 30 : iG + 30;
+    assign oB = (iB > 128) ? iB - 30 : iB + 30;
+endmodule
+module oil_painting (
+    input [7:0] iR,
+    input [7:0] iG,
+    input [7:0] iB,
+    output [7:0] oR,
+    output [7:0] oG,
+    output [7:0] oB
+);
+    // Simplified oil painting effect: quantize color values
+    wire [7:0] quantized_R, quantized_G, quantized_B;
+
+    assign quantized_R = (iR & 8'b11100000) + 8'b00011100;
+    assign quantized_G = (iG & 8'b11100000) + 8'b00011100;
+    assign quantized_B = (iB & 8'b11100000) + 8'b00011100;
+
+    assign oR = quantized_R;
+    assign oG = quantized_G;
+    assign oB = quantized_B;
+endmodule
+	
